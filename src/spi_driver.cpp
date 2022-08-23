@@ -29,9 +29,9 @@ bool SpiDriver::setMode(uint8_t mode) const {
 
   if (res < 0) {
     std::cout << "ioctl SPI_IOC_WR_MODE failed: " << strerror(errno) << std::endl;
-    return -1;
+    return false;
   }
-  return false;
+  return true;
 }
 
 int SpiDriver::xfer() const {
