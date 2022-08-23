@@ -23,7 +23,7 @@ int main() {
   memset(buf, 0, sizeof buf);
 
 // Send a read command
-  buf[0] = 0x0E;
+  buf[0] = 0x56;
   buf[1] = 0x00;
 
   xfer[0].tx_buf = (unsigned long) buf;
@@ -33,6 +33,14 @@ int main() {
   unsigned char buf2[len];
   xfer[0].rx_buf = (unsigned long) buf2;
   xfer[0].len = len;
+
+  uint8_t a = SPI_MODE_3;
+  int res = ioctl(fd, SPI_IOC_WR_MODE, &a);
+
+  if (res < 0) {
+    perror("SPI_MODE_3");
+    return -1;
+  }
 
   int status = ioctl(fd, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
