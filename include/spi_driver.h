@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include "spi_commands.h"
+#include "adis16448_cmds.h"
 
 class SpiDriver {
  public:
