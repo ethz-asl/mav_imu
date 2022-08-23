@@ -8,7 +8,10 @@ find_library(mraa libmraa.so REQUIRED)
 
 catkin_simple()
 
-cs_add_executable(mav_imu_node src/main.cpp)
+cs_add_executable(mav_imu_node
+        src/main.cpp
+        src/spi_driver.cpp
+        )
 
 cs_install()
 cs_export()
