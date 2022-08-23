@@ -13,6 +13,7 @@ class SpiDriver {
  public:
   explicit SpiDriver(std::string path);
   bool open();
+  bool setMode(uint8_t mode) const;
   int xfer() const;
 
 

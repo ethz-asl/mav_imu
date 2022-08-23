@@ -24,12 +24,21 @@ bool SpiDriver::open() {
   return true;
 }
 
+bool SpiDriver::setMode(uint8_t mode) const {
+  int res = ioctl(fd_, SPI_IOC_WR_MODE, &mode);
+
+  if (res < 0) {
+    std::cout << "ioctl SPI_IOC_WR_MODE failed: " << strerror(errno) << std::endl;
+    return -1;
+  }
+  return false;
+}
+
 int SpiDriver::xfer() const {
   struct spi_ioc_transfer xfer[1];
   unsigned char buf[32]{};
-  unsigned char *bp;
 
-
+  int len = 2;
   memset(xfer, 0, sizeof xfer);
   memset(buf, 0, sizeof buf);
 
@@ -38,30 +47,21 @@ int SpiDriver::xfer() const {
   buf[1] = 0x00;
 
   xfer[0].tx_buf = (unsigned long) buf;
-  xfer[0].len = 2;
+  xfer[0].len = len;
 
-  int len = 2;
   unsigned char buf2[len];
   xfer[0].rx_buf = (unsigned long) buf2;
   xfer[0].len = len;
 
-  uint8_t a = SPI_MODE_3;
-  int res = ioctl(fd_, SPI_IOC_WR_MODE, &a);
-
-  if (res < 0) {
-    perror("SPI_MODE_3");
-    return -1;
-  }
-
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
-    perror("SPI_IOC_MESSAGE");
+    std::cout << "ioctl SPI_IOC_MESSAGE failed: " << strerror(errno) << std::endl;
     return -1;
   }
 
-  printf("response(%d): ", status);
-  for (bp = buf2; len; len--) {
-    printf("%02x ", *bp++);
+  std::cout << "response(" << status << "):" << std::endl;
+  for (unsigned char *bp = buf2; len; len--) {
+    std::cout << std::hex << (int) *bp++ << " ";
   }
   std::cout << std::endl;
 
