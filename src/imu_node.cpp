@@ -6,9 +6,9 @@
 #include <ros/ros.h>
 #include "imu_node.h"
 #include "sensor_msgs/Imu.h"
-ImuNode::ImuNode(const std::string &path) : spi_driver_(path) {
 
-}
+ImuNode::ImuNode(const std::string &path) : spi_driver_(path) {}
+
 bool ImuNode::init() {
   if (!spi_driver_.open()) {
     return false;
@@ -23,7 +23,9 @@ bool ImuNode::init() {
 int ImuNode::run() {
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(1);
-    if (!spi_driver_.xfer()) {
+
+    std::vector<byte> res = spi_driver_.xfer({0x0E, 0x00});
+    if (res.empty()) {
       return -1;
     }
 

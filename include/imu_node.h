@@ -7,6 +7,8 @@
 
 #include <string>
 #include "spi_driver.h"
+#include <ros/ros.h>
+
 class ImuNode {
  public:
   explicit ImuNode(const std::string& path);

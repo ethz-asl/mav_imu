@@ -8,12 +8,21 @@
 #include <string>
 #include <vector>
 
+typedef unsigned char byte;
+
 class SpiDriver {
  public:
   explicit SpiDriver(std::string path);
   bool open();
   [[nodiscard]] bool setMode(uint8_t mode) const;
-  [[nodiscard]] bool xfer() const;
+
+  /**
+   * Spi transaction
+   *
+   * @param cmd vector with 2 bytes
+   * @return vector with response or empty vector on failure
+   */
+  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd) const;
 
 
  private:
