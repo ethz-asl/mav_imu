@@ -10,9 +10,8 @@
 #include <utility>
 #include <sys/ioctl.h>
 
-SpiDriver::SpiDriver(std::string path) : path_(std::move(path)) {
+SpiDriver::SpiDriver(std::string path) : path_(std::move(path)) {}
 
-}
 bool SpiDriver::open() {
 
   fd_ = ::open(path_.data(), O_RDWR);
@@ -34,16 +33,18 @@ bool SpiDriver::setMode(uint8_t mode) const {
   return true;
 }
 
-int SpiDriver::xfer() const {
+bool SpiDriver::xfer() const {
   struct spi_ioc_transfer xfer[1];
   unsigned char buf[32]{};
+
+  xfer->speed_hz = 2000000;
 
   int len = 2;
   memset(xfer, 0, sizeof xfer);
   memset(buf, 0, sizeof buf);
 
 // Send a read command
-  buf[0] = 0x56;
+  buf[0] = 0x0E;
   buf[1] = 0x00;
 
   xfer[0].tx_buf = (unsigned long) buf;
@@ -56,7 +57,7 @@ int SpiDriver::xfer() const {
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
     std::cout << "ioctl SPI_IOC_MESSAGE failed: " << strerror(errno) << std::endl;
-    return -1;
+    return false;
   }
 
   std::cout << "response(" << status << "):" << std::endl;
@@ -65,5 +66,5 @@ int SpiDriver::xfer() const {
   }
   std::cout << std::endl;
 
-  return 0;
+  return true;
 }

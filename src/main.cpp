@@ -1,20 +1,20 @@
-#include <linux/spi/spidev.h>
-#include "spi_driver.h"
+#include <csignal>
+#include "imu_node.h"
+#include <ros/ros.h>
 
+void SignalHandler(int signum) {
+  if (signum == SIGINT) {
+    ROS_INFO("Received sigint. Shutting down.");
+    ImuNode::run_node = false;
+  }
+}
 
-int main() {
-  SpiDriver spi_driver("/dev/spidev0.1");
-
-  if (!spi_driver.open()) {
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "test_node");
+  signal(SIGINT, SignalHandler);
+  ImuNode node{"/dev/spidev0.1"};
+  if (!node.init()) {
     return -1;
   }
-
-  if (!spi_driver.setMode(SPI_MODE_3)) {
-    return -1;
-  }
-
-  if (!spi_driver.xfer()) {
-    return -1;
-  }
-  return 0;
+  return node.run();
 }
