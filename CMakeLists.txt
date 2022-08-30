@@ -11,7 +11,9 @@ cs_add_executable(${PROJECT_NAME}_node
         src/main.cpp
         src/spi_driver.cpp
         src/imu_node.cpp
+        src/imu/adis16448.cpp
         )
+target_compile_definitions(${PROJECT_NAME}_node PRIVATE MODE_ROSLOG)
 
 cs_install()
 cs_export()

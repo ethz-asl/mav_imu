@@ -1,18 +1,37 @@
 #include <csignal>
 #include "imu_node.h"
 #include <ros/ros.h>
+#include "imu/adis16448.h"
+#include <log++/log++.h>
 
 void SignalHandler(int signum) {
   if (signum == SIGINT) {
-    ROS_INFO("Received sigint. Shutting down.");
+    LOG(I, "Received sigint. Shutting down.");
     ImuNode::run_node = false;
   }
 }
 
+
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "test_node");
+  LOG_INIT(argv[0]);
   signal(SIGINT, SignalHandler);
-  ImuNode node{"/dev/spidev0.1"};
+  std::string path = "/dev/spidev0.1";
+
+
+  Adis16448 adis_16448(path);
+  if (!adis_16448.init()) {
+    LOG(E, "init failed.");
+    return -1;
+  }
+  LOG(I, "Adis16448 initialized");
+
+  adis_16448.selftest();
+  adis_16448.burstread();
+  adis_16448.burstread();
+  adis_16448.close();
+
+  ros::init(argc, argv, "test_node");
+  ImuNode node{path};
   if (!node.init()) {
     return -1;
   }

@@ -23,7 +23,11 @@ class SpiDriver {
    * @return vector with response or empty vector on failure
    */
   [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd) const;
+  std::vector<byte> burst(const std::vector<byte>& cmd, int res_len);
 
+  bool close() const;
+
+  ~SpiDriver();
 
  private:
   int fd_{};
