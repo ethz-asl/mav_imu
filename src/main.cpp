@@ -17,21 +17,11 @@ int main(int argc, char **argv) {
   signal(SIGINT, SignalHandler);
   std::string path = "/dev/spidev0.1";
 
-
-  Adis16448 adis_16448(path);
-  if (!adis_16448.init()) {
-    LOG(E, "init failed.");
-    return -1;
-  }
-  LOG(I, "Adis16448 initialized");
-
-  adis_16448.selftest();
-  adis_16448.burstread();
-  adis_16448.burstread();
-  adis_16448.close();
+  Adis16448 test{path};
+  LOG(I, test.unsignedWordToInt({0x01, 0x00}));
 
   ros::init(argc, argv, "test_node");
-  ImuNode node{path};
+  ImuNode node{path, test};
   if (!node.init()) {
     return -1;
   }

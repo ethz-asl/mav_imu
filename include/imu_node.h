@@ -7,19 +7,20 @@
 
 #include <string>
 #include "spi_driver.h"
+#include "imu/adis16448.h"
 #include <ros/ros.h>
 
 class ImuNode {
  public:
-  explicit ImuNode(const std::string& path);
+  explicit ImuNode(const std::string &path, ImuInterface& imu_interface);
   bool init();
   int run();
 
   inline static bool run_node = true;
 
  private:
+  ImuInterface &imu_interface_;
   ros::NodeHandle nh_{};
-  SpiDriver spi_driver_;
 };
 
 #endif //MAV_IMU__IMU_TEST_H_

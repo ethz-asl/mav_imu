@@ -10,13 +10,58 @@
 
 class Adis16448 : public ImuInterface {
  public:
+  /**
+   * Adis16448 Constructor
+   * @param path to spidev e.g. /dev/spidev0.1
+   */
   explicit Adis16448(const std::string &path);
+
+  /**
+   * Imu health check.
+   * @return true if successful, otherwise false
+   */
   bool selftest() override;
   bool init() override;
   bool burstread();
-  bool close() override;
+  vec3<int> getGyro() override;
+  vec3<int> getAcceleration() override;
+  vec3<int> getMagnetometer() override;
 
- private:
+  /**
+   * Gets barometric pressure
+   *
+   * @return Pressure in mbar
+   */
+  double getBarometer() override;
+
+  /**
+   * Gets temperature
+   *
+   * Note that this temperature represents
+   * an internal temperature reading, which does not precisely
+   * represent external conditions. The intended use of TEMP_OUT
+   * is to monitor relative changes in temperature.
+   *
+   * @return temperature in °C
+   */
+  double getTemperature() override;
+
+  /**
+   * Generic function to read spi register
+   * @param cmd
+   * @return
+   */
+  int getRaw(std::vector<byte> cmd) override;
+
+  /**
+   * Free file descriptor
+   * @return true if successful, otherwise false and errno is set.
+   */
+  bool close() final;
+
+ public:
+  static int signedWordToInt(const std::vector<byte> &word);
+  static int unsignedWordToInt(const std::vector<byte> &word);
   SpiDriver spi_driver_;
 };
 
