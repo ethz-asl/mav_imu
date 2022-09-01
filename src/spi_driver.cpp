@@ -101,14 +101,6 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
   for (int i = 0; i < len; i++) {
     res.push_back(buf2[i]);
   }
-
-
-  std::stringstream ss;
-  ss << "response (" << status / 2 << "): ";
-  for (unsigned char *bp = buf2; len; len--) {
-    ss << std::hex << (int) *bp++ << " ";
-  }
-  LOG(I, ss.str());
   return res;
 }
 
