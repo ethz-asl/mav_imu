@@ -24,7 +24,13 @@ class Adis16448 : public ImuInterface {
   bool init() override;
   bool burstread();
   vec3<int> getGyro() override;
-  vec3<int> getAcceleration() override;
+
+  /**
+   * Gets acceleration data vector
+   *
+   * @return acceleration in m/s² as double
+   */
+  vec3<double> getAcceleration() override;
   vec3<int> getMagnetometer() override;
 
   /**

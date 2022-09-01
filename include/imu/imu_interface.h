@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include "spi_driver.h"
+
 template<typename T>
 struct vec3 {
   T x;
@@ -20,6 +21,10 @@ struct vec3 {
   }
 };
 
+template<typename T>
+inline vec3<T> operator/(const vec3<T> t, T num) {
+  return {t.x / num, t.y / num, t.z / num};
+}
 
 class ImuInterface {
  public:
@@ -33,7 +38,7 @@ class ImuInterface {
   //virtual vec3<int> getGyroscopeOffset() = 0;
 
   //! accelerometer output
-  virtual vec3<int> getAcceleration() = 0;
+  virtual vec3<double> getAcceleration() = 0;
   //! acceleration bias offset factor
   //virtual vec3<T> getAccelerometerOffset() = 0;
 

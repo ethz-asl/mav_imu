@@ -28,15 +28,14 @@ bool Adis16448::init() {
 
 
 bool Adis16448::selftest() {
-  std::vector<byte> res;
-  res = spi_driver_.xfer(CMD(DIAG_STAT));
+  std::vector<byte> res = spi_driver_.xfer(CMD(DIAG_STAT));
 
   if (res.empty()) {
     return false;
   }
 
   if ((res[1] << 8) + res[0] ^ 0x00) {
-    std::cout << "self check failed" << std::endl;
+    LOG(E, "self check failed");
     return false;
   }
 
@@ -70,15 +69,19 @@ vec3<int> Adis16448::getGyro() {
   gyro.x = unsignedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}));
   gyro.y = unsignedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}));
   gyro.z = unsignedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}));
+
   return gyro;
 }
 
-vec3<int> Adis16448::getAcceleration() {
-  vec3<int> acceleration{};
+vec3<double> Adis16448::getAcceleration() {
+  //twos complement format, 1200 LSB/g, 0 g = 0x0000
+  vec3<double> acceleration{};
 
-  acceleration.x = unsignedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}));
-  acceleration.y = unsignedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}));
-  acceleration.z = unsignedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}));
+  acceleration.x = signedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}));
+  acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}));
+  acceleration.z = signedWordToInt( spi_driver_.xfer({ZACCL_OUT, 0x00}));
+
+  acceleration / 1200.;
   return acceleration;
 }
 

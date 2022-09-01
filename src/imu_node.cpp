@@ -25,6 +25,8 @@ int ImuNode::run() {
 
     LOG(I, "Temperature: " << imu_interface_.getTemperature());
     LOG(I, "Baro: " << imu_interface_.getBarometer());
+    LOG(I, "Gyro: " << imu_interface_.getGyro().toString());
+    LOG(I, "Accel: " << imu_interface_.getAcceleration().toString());
 
 
     //TODO implement
