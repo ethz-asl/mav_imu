@@ -66,9 +66,9 @@ bool Adis16448::close() {
 vec3<int> Adis16448::getGyro() {
   vec3<int> gyro{};
 
-  gyro.x = unsignedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}));
-  gyro.y = unsignedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}));
-  gyro.z = unsignedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}));
+  gyro.x = signedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}));
+  gyro.y = signedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}));
+  gyro.z = signedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}));
 
   return gyro;
 }
