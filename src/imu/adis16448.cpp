@@ -34,11 +34,12 @@ bool Adis16448::selftest() {
   }
 
   if ((res[1] << 8) + res[0] ^ 0x00) {
-    LOG(E, "self check failed");
+    //TODO evaluate response
+    LOG(E, "Imu self-check failed");
     return false;
   }
 
-  LOG(I, "Self check passed");
+  LOG(I, "Imu self-check passed");
   return true;
 }
 

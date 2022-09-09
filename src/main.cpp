@@ -15,14 +15,15 @@ void SignalHandler(int signum) {
 int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
   signal(SIGINT, SignalHandler);
-  std::string path = "/dev/spidev0.1";
-
-  Adis16448 test{path};
-  LOG(I, test.unsignedWordToInt({0x01, 0x00}));
-
   ros::init(argc, argv, "test_node");
-  ImuNode node{path, test};
+
+  ros::NodeHandle nh_private("~");
+  std::string path = nh_private.param("spi_path", std::string("/dev/spidev0.1"));
+
+  Adis16448 adis_16448{path};
+  ImuNode node{adis_16448};
   if (!node.init()) {
+    LOG(F, "Imu init failed.");
     return -1;
   }
   return node.run();
