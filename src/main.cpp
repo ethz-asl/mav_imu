@@ -19,9 +19,13 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle nh_private("~");
   std::string path = nh_private.param("spi_path", std::string("/dev/spidev0.1"));
+  int frequency = nh_private.param("frequency", 200);
+
+  LOG(I, "Spi path: " << path);
+  LOG(I, "Loop frequency " << frequency);
 
   Adis16448 adis_16448{path};
-  ImuNode node{adis_16448};
+  ImuNode node{adis_16448, frequency};
   if (!node.init()) {
     LOG(F, "Imu init failed.");
     return -1;

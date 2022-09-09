@@ -15,12 +15,12 @@ Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 bool Adis16448::init() {
 
   if (!spi_driver_.open()) {
-    std::cout << "open failed: " << strerror(errno) << std::endl;
+    LOG(E, "open failed: " << strerror(errno));
     return false;
   }
 
   if (!spi_driver_.setMode(SPI_MODE_3)) {
-    std::cout << "Setmode failed" << std::endl;
+    LOG(E, "Setmode failed");
     return false;
   }
   return true;
@@ -39,7 +39,7 @@ bool Adis16448::selftest() {
     return false;
   }
 
-  LOG(I, "Imu self-check passed");
+  LOG(I, "Adis16448 self-check passed");
   return true;
 }
 

@@ -16,7 +16,7 @@
 
 class ImuNode {
  public:
-  explicit ImuNode(ImuInterface& imu_interface);
+  ImuNode(ImuInterface& imu_interface, int frequency);
   bool init();
   int run();
 
@@ -35,6 +35,7 @@ class ImuNode {
 
   ImuInterface &imu_interface_;
   ros::NodeHandle nh_{};
+  int frequency_{};
 };
 
 #endif //MAV_IMU__IMU_TEST_H_

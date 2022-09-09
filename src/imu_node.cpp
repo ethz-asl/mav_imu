@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <imu_node.h>
 
-ImuNode::ImuNode(ImuInterface &imu) : imu_interface_(imu) {
+ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), frequency_(frequency) {
   imu_data_raw_pub_ = nh_.advertise<sensor_msgs::Imu>("/imu/data_raw", 1);
   imu_mag_pub_ = nh_.advertise<sensor_msgs::MagneticField>("/imu/mag", 1);
   imu_temp_pub_ = nh_.advertise<sensor_msgs::Temperature>("/imu/temp", 1);
@@ -27,7 +27,7 @@ bool ImuNode::init() {
 int ImuNode::run() {
   LOG(I, "Node started");
   while (ros::ok() && run_node) {
-    ros::Rate loop_rate(1000);
+    ros::Rate loop_rate(frequency_);
 
     //TODO implement
     ros::Time time = ros::Time::now();
