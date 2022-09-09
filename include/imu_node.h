@@ -9,6 +9,7 @@
 #include "spi_driver.h"
 #include "imu/adis16448.h"
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 
 class ImuNode {
  public:
@@ -19,8 +20,11 @@ class ImuNode {
   inline static bool run_node = true;
 
  private:
+  sensor_msgs::Imu processImuData();
   ImuInterface &imu_interface_;
   ros::NodeHandle nh_{};
+  ros::Publisher imu_data_raw_pub_{};
+  ros::Publisher imu_mag_pub_{};
 };
 
 #endif //MAV_IMU__IMU_TEST_H_

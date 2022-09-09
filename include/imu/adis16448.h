@@ -36,7 +36,7 @@ class Adis16448 : public ImuInterface {
   /**
    * Gets barometric pressure
    *
-   * @return Pressure in mbar
+   * @return QFE pressure in hPa
    */
   double getBarometer() override;
 
@@ -65,9 +65,9 @@ class Adis16448 : public ImuInterface {
    */
   bool close() final;
 
- public:
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
+ private:
   SpiDriver spi_driver_;
 };
 

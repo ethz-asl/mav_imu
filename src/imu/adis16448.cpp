@@ -2,15 +2,15 @@
 // Created by acey on 25.08.22.
 //
 
-#include "log++/log++.h"
+
 #include "imu/adis16448.h"
 #include "adis16448_cmds.h"
 #include <iostream>
 #include <linux/spi/spidev.h>
 #include <cstring>
+#include "log++/log++.h"
 
-
-Adis16448::Adis16448(const std::string& path) : spi_driver_(path) {}
+Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
 bool Adis16448::init() {
 
@@ -25,7 +25,6 @@ bool Adis16448::init() {
   }
   return true;
 }
-
 
 bool Adis16448::selftest() {
   std::vector<byte> res = spi_driver_.xfer(CMD(DIAG_STAT));
@@ -79,9 +78,8 @@ vec3<double> Adis16448::getAcceleration() {
 
   acceleration.x = signedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}));
   acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}));
-  acceleration.z = signedWordToInt( spi_driver_.xfer({ZACCL_OUT, 0x00}));
+  acceleration.z = signedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}));
 
-  acceleration / 1200.;
   return acceleration;
 }
 
@@ -102,9 +100,9 @@ double Adis16448::getBarometer() {
 }
 
 double Adis16448::getTemperature() {
-  //Twos complement, 0.07386°C/LSB, 31°C = 0x0000
+  //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
   int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}));
-  return 31 + (a * 0.07386);
+  return 31 + (a * 0.07386); //add 15 (0b1111) because spi output is 12bit
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
@@ -112,14 +110,10 @@ int Adis16448::getRaw(std::vector<byte> cmd) {
   return unsignedWordToInt(res);
 }
 
-int Adis16448::unsignedWordToInt(const std::vector<byte>& word) {
+int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
   return ((word[0] << 8) + word[1]);
 }
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
-  //byte is unsigned char, cast to signed char
-  char byte1 = (char) word[0];
-  char byte2 = (char) word[1];
-
-  return (byte1 << 8) + byte2;
+  return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1]; // NOLINT(cert-str34-c)
 }
