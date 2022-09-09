@@ -102,7 +102,7 @@ double Adis16448::getBarometer() {
 double Adis16448::getTemperature() {
   //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
   int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}));
-  return 31 + (a * 0.07386); //add 15 (0b1111) because spi output is 12bit
+  return 31 + (a * 0.07386);
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
@@ -111,9 +111,9 @@ int Adis16448::getRaw(std::vector<byte> cmd) {
 }
 
 int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
-  return ((word[0] << 8) + word[1]);
+  return ((word[0] << CHAR_BIT) + word[1]);
 }
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
-  return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1]; // NOLINT(cert-str34-c)
+  return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
 }
