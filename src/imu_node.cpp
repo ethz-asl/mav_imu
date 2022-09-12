@@ -29,12 +29,14 @@ int ImuNode::run() {
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(frequency_);
 
-    //TODO implement
-    ros::Time time = ros::Time::now();
-    sensor_msgs::Imu imu_msg = processImuData(time);
-    sensor_msgs::MagneticField mag_msg = processMagneticFieldData(time);
-    sensor_msgs::Temperature  temp_msg = processTemperature(time);
-    sensor_msgs::FluidPressure pressure_msg = processFluidpressure(time);
+
+    time_now_ = ros::Time::now();
+    imu_burst_result_ = imu_interface_.burst();
+
+    sensor_msgs::Imu imu_msg = processImuData();
+    sensor_msgs::MagneticField mag_msg = processMagneticFieldData();
+    sensor_msgs::Temperature  temp_msg = processTemperature();
+    sensor_msgs::FluidPressure pressure_msg = processFluidpressure();
 
     imu_data_raw_pub_.publish(imu_msg);
     imu_mag_pub_.publish(mag_msg);
@@ -48,47 +50,44 @@ int ImuNode::run() {
   return 0;
 }
 
-sensor_msgs::Imu ImuNode::processImuData(ros::Time time) {
+sensor_msgs::Imu ImuNode::processImuData() {
   sensor_msgs::Imu msg;
-  msg.header.stamp = time;
+  msg.header.stamp = time_now_;
 
-  auto a = imu_interface_.getAcceleration();
-  msg.linear_acceleration.x = a.x;
-  msg.linear_acceleration.y = a.y;
-  msg.linear_acceleration.z = a.z;
+  msg.linear_acceleration.x = imu_burst_result_.acceleration.x;
+  msg.linear_acceleration.y = imu_burst_result_.acceleration.y;
+  msg.linear_acceleration.z = imu_burst_result_.acceleration.z;
 
-  auto g = imu_interface_.getGyro();
-  msg.angular_velocity.x = g.x;
-  msg.angular_velocity.y = g.y;
-  msg.angular_velocity.z = g.z;
+  msg.angular_velocity.x = imu_burst_result_.gyro.x;
+  msg.angular_velocity.y = imu_burst_result_.gyro.y;
+  msg.angular_velocity.z = imu_burst_result_.gyro.z;
   return msg;
 }
 
-sensor_msgs::MagneticField ImuNode::processMagneticFieldData(ros::Time time) {
+sensor_msgs::MagneticField ImuNode::processMagneticFieldData() {
   sensor_msgs::MagneticField mag_msg;
 
-  mag_msg.header.stamp = time;
+  mag_msg.header.stamp = time_now_;
 
-  vec3<int> mag = imu_interface_.getMagnetometer();
-  mag_msg.magnetic_field.x = mag.x;
-  mag_msg.magnetic_field.y = mag.y;
-  mag_msg.magnetic_field.z = mag.z;
+  mag_msg.magnetic_field.x = imu_burst_result_.magnetometer.x;
+  mag_msg.magnetic_field.y = imu_burst_result_.magnetometer.y;
+  mag_msg.magnetic_field.z = imu_burst_result_.magnetometer.z;
   return mag_msg;
 }
 
-sensor_msgs::Temperature ImuNode::processTemperature(ros::Time time) {
+sensor_msgs::Temperature ImuNode::processTemperature() {
   sensor_msgs::Temperature temp_msg;
-  temp_msg.header.stamp = time;
-  temp_msg.temperature = imu_interface_.getTemperature();
+  temp_msg.header.stamp = time_now_;
+  temp_msg.temperature = imu_burst_result_.temp;
   temp_msg.variance = 0;
 
   return temp_msg;
 }
-sensor_msgs::FluidPressure ImuNode::processFluidpressure(ros::Time time) {
+sensor_msgs::FluidPressure ImuNode::processFluidpressure() {
   sensor_msgs::FluidPressure pressure_msg;
-  pressure_msg.header.stamp = time;
+  pressure_msg.header.stamp = time_now_;
   //Ros takes fluid pressure in Pa. Convert hPa to Pa.
-  pressure_msg.fluid_pressure = imu_interface_.getBarometer() * 100;
+  pressure_msg.fluid_pressure = imu_burst_result_.baro * 100;
   pressure_msg.variance = 0;
   return pressure_msg;
 }

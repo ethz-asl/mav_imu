@@ -26,6 +26,19 @@ inline vec3<T> operator/(const vec3<T> t, T num) {
   return {t.x / num, t.y / num, t.z / num};
 }
 
+
+class ImuBurstResult {
+ public:
+  vec3<int> gyro = {NaN, NaN, NaN};
+  vec3<double> acceleration = {NaN, NaN, NaN};
+  vec3<int> magnetometer = {NaN, NaN, NaN};
+  double baro{NaN};
+  double temp{NaN};
+
+ private:
+  inline static constexpr const int NaN = std::numeric_limits<int>::quiet_NaN();
+};
+
 class ImuInterface {
  public:
   virtual bool selftest() = 0;
@@ -53,6 +66,21 @@ class ImuInterface {
   virtual double getTemperature() = 0;
 
   virtual int getRaw(std::vector<byte> cmd) = 0;
+
+  /**
+   * Reads all sensor data at once
+   * @return struct with sensor data. Returns NaN if hardware does not support specific sensor.
+   */
+  virtual ImuBurstResult burst() {
+    ImuBurstResult res{};
+    res.gyro = getGyro();
+    res.acceleration = getAcceleration();
+    res.magnetometer = getMagnetometer();
+    res.baro = getBarometer();
+    res.temp = getTemperature();
+
+    return res;
+  }
 
   //virtual int getSerialnumber();
 };

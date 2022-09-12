@@ -23,9 +23,9 @@ class SpiDriver {
    * @return vector with response or empty vector on failure
    */
   [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd) const;
-  [[nodiscard]] std::vector<byte> burst(const std::vector<byte>& cmd) const;
+  [[nodiscard]] std::vector<std::vector<byte>> burst(const std::vector<std::vector<byte>>& cmd) const;
 
-  bool close() const;
+  bool close() const; // NOLINT(modernize-use-nodiscard)
 
   ~SpiDriver();
 

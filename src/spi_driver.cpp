@@ -3,10 +3,9 @@
 //
 
 #include <fcntl.h>
-#include "spi_driver.h"
+#include <spi_driver.h>
 #include <linux/spi/spidev.h>
 #include <cstring>
-#include <iostream>
 #include <utility>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -34,47 +33,64 @@ bool SpiDriver::setMode(uint8_t mode) const {
   return true;
 }
 
-std::vector<byte> SpiDriver::burst(const std::vector<byte> &cmd) const {
-  if (cmd.size() > sizeof(__u64)) {
-    LOG(E, "cmd buffer to big " << cmd.size() << " > " << sizeof(__u64));
-    return {};
-  }
+std::vector<std::vector<byte>> SpiDriver::burst(const std::vector<std::vector<byte>> &cmds) const {
 
-  struct spi_ioc_transfer xfer[2];
-  unsigned char buf[32]{};
+  std::vector<std::vector<byte>> res{};
+  for (int i = 0; i < cmds.size() + 1; i++) {
 
-  xfer->speed_hz = 2000000;
+    std::vector<byte> cmd{};
+    if (i < cmds.size()) {
+      const std::vector<byte>& a = cmds.at(i);
+      cmd = a;
+    } else {
+      cmd = {0x00, 0x00};
+    }
 
-  int len = 2;
-  memset(xfer, 0, sizeof xfer);
-  memset(buf, 0, sizeof buf);
+    if (cmd.size() > sizeof(__u64)) {
+      LOG(E, "cmd buffer to big " << cmd.size() << " > " << sizeof(__u64));
+      return {};
+    }
 
-// Send a read command
-  buf[0] = cmd[0];
-  buf[1] = cmd[1];
+    struct spi_ioc_transfer xfer[1];
+    unsigned char buf[32]{};
 
-  xfer[0].tx_buf = (unsigned long) buf;
-  xfer[0].len = len;
+    xfer->speed_hz = 2000000;
 
-  unsigned char buf2[len];
-  memset(buf2, 0, sizeof buf2);
-  xfer[1].rx_buf = (unsigned long) buf2;
-  xfer[1].len = len;
+    int len = 2;
+    memset(xfer, 0, sizeof xfer);
+    memset(buf, 0, sizeof buf);
 
-  int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
-  if (status < 0) {
-    LOG(E, "ioctl SPI_IOC_MESSAGE failed: " << strerror(errno));
-    return {};
-  }
+    // Send a read command
+    buf[0] = cmd[0];
+    buf[1] = cmd[1];
 
-  std::vector<unsigned char> res{};
+    xfer[0].tx_buf = (unsigned long) buf;
+    xfer[0].len = len;
 
-  for (int i = 0; i < len; i++) {
-    res.push_back(buf2[i]);
+    unsigned char buf2[len];
+    memset(buf2, 0, sizeof buf2);
+    xfer[0].rx_buf = (unsigned long) buf2;
+    xfer[0].len = len;
+
+    int status = ioctl(fd_, SPI_IOC_MESSAGE(1), xfer);
+    if (status < 0) {
+      LOG(E, "ioctl SPI_IOC_MESSAGE failed: " << strerror(errno));
+      return {};
+    }
+
+    if (i == 0) {
+      continue;
+    }
+
+    std::vector<unsigned char> ret{};
+
+    for (int j = 0; j < len; j++) {
+      ret.push_back(buf2[j]);
+    }
+    res.push_back(ret);
   }
   return res;
 }
-
 
 std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
   if (cmd.size() > sizeof(__u64)) {

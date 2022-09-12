@@ -43,22 +43,6 @@ bool Adis16448::selftest() {
   return true;
 }
 
-bool Adis16448::burstread() {
-  std::vector<byte> req = CMD(DIAG_STAT);
-  req.resize(req.size() + 12);
-
-  std::vector<byte> res;
-
-  res = spi_driver_.burst(req);
-
-  for (byte b: res) {
-    std::cout << b << " ";
-  }
-  std::cout << std::endl;
-
-  return false;
-}
-
 bool Adis16448::close() {
   return spi_driver_.close();
 }
@@ -117,4 +101,38 @@ int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
+}
+
+ImuBurstResult Adis16448::burst() {
+  std::vector<std::vector<byte>> res = spi_driver_.burst({
+          {XGYRO_OUT, 0x00},
+          {YGYRO_OUT, 0x00},
+          {ZGYRO_OUT, 0x00},
+          {XACCL_OUT, 0x00},
+          {YACCL_OUT, 0x00},
+          {ZACCL_OUT, 0x00},
+          {XMAGN_OUT, 0x00},
+          {YMAGN_OUT, 0x00},
+          {ZMAGN_OUT, 0x00},
+          {BARO_OUT, 0x00},
+          {TEMP_OUT, 0x00}
+      });
+
+
+  struct ImuBurstResult ret{};
+  ret.gyro = {signedWordToInt(res[0]), signedWordToInt(res[1]) ,signedWordToInt(res[2])};
+  ret.acceleration = {
+      (double) signedWordToInt(res[3]),
+      (double)signedWordToInt(res[4]),
+      (double)signedWordToInt(res[5])
+  };
+  ret.magnetometer = {
+      unsignedWordToInt(res[6]),
+      unsignedWordToInt(res[7]),
+      unsignedWordToInt(res[8])
+  };
+
+  ret.baro = unsignedWordToInt(res[9]) * 0.02;
+  ret.temp = 31 + (signedWordToInt(res[10]) * 0.07386);
+  return ret;
 }

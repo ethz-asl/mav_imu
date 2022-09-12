@@ -23,10 +23,10 @@ class ImuNode {
   inline static bool run_node = true;
 
  private:
-  sensor_msgs::Imu processImuData(ros::Time time);
-  sensor_msgs::MagneticField processMagneticFieldData(ros::Time time);
-  sensor_msgs::Temperature processTemperature(ros::Time time);
-  sensor_msgs::FluidPressure processFluidpressure(ros::Time time);
+  sensor_msgs::Imu processImuData();
+  sensor_msgs::MagneticField processMagneticFieldData();
+  sensor_msgs::Temperature processTemperature();
+  sensor_msgs::FluidPressure processFluidpressure();
 
   ros::Publisher imu_data_raw_pub_{};
   ros::Publisher imu_mag_pub_{};
@@ -36,6 +36,9 @@ class ImuNode {
   ImuInterface &imu_interface_;
   ros::NodeHandle nh_{};
   int frequency_{};
+
+  ros::Time time_now_{};
+  struct ImuBurstResult imu_burst_result_{};
 };
 
 #endif //MAV_IMU__IMU_TEST_H_

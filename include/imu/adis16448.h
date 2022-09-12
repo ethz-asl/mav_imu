@@ -60,6 +60,12 @@ class Adis16448 : public ImuInterface {
   int getRaw(std::vector<byte> cmd) override;
 
   /**
+   * Custom burst mode
+   * @return struct with all values.
+   */
+  ImuBurstResult burst() override;
+
+  /**
    * Free file descriptor
    * @return true if successful, otherwise false and errno is set.
    */
