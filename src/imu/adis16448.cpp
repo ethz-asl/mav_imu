@@ -49,7 +49,7 @@ bool Adis16448::burstread() {
 
   std::vector<byte> res;
 
-  res = spi_driver_.burst(req, req.size() + 12);
+  res = spi_driver_.burst(req);
 
   for (byte b: res) {
     std::cout << b << " ";
