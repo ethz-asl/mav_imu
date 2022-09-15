@@ -26,7 +26,6 @@ catkin_add_gtest(${PROJECT_NAME}_test
         test/test_entry_point.cc
         test/test_vec3.cc
         test/test_adis16448_conversions.cc
-        src/imu/adis16448.cpp
         )
 
 target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})

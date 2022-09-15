@@ -16,47 +16,20 @@ class Adis16448 : public ImuInterface {
    */
   explicit Adis16448(const std::string &path);
 
-  /**
-   * Imu health check.
-   * @return true if successful, otherwise false
-   */
   bool selftest() override;
   bool init() override;
-  bool burstread();
-  vec3<int> getGyro() override;
-
-  /**
-   * Gets acceleration data vector
-   *
-   * @return acceleration in m/s² as double
-   */
+  vec3<double> getGyro() override;
   vec3<double> getAcceleration() override;
-  vec3<int> getMagnetometer() override;
-
-  /**
-   * Gets barometric pressure
-   *
-   * @return QFE pressure in hPa
-   */
+  vec3<double> getMagnetometer() override;
   double getBarometer() override;
 
   /**
-   * Gets temperature
-   *
    * Note that this temperature represents
    * an internal temperature reading, which does not precisely
    * represent external conditions. The intended use of TEMP_OUT
    * is to monitor relative changes in temperature.
-   *
-   * @return temperature in °C
    */
   double getTemperature() override;
-
-  /**
-   * Generic function to read spi register
-   * @param cmd
-   * @return
-   */
   int getRaw(std::vector<byte> cmd) override;
 
   /**
@@ -74,6 +47,25 @@ class Adis16448 : public ImuInterface {
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
  private:
+  //!Convert spi output to measurement unit required by the ImuInterface
+
+ /**
+  * @param gyro
+  * @return rad/s
+  */
+  static vec3<double> convertGyro(vec3<double> gyro);
+
+  /**
+   * @param accel
+   * @return m/s^2
+   */
+  static vec3<double> convertAcceleration(vec3<double> accel);
+
+  /**
+   * @param magnetometer
+   * @return tesla [T]
+   */
+  static vec3<double> convertMagnetometer(vec3<double> magnetometer);
   SpiDriver spi_driver_;
 };
 

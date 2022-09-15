@@ -53,6 +53,7 @@ int ImuNode::run() {
 sensor_msgs::Imu ImuNode::processImuData() {
   sensor_msgs::Imu msg;
   msg.header.stamp = time_now_;
+  msg.header.frame_id = "map";
 
   msg.linear_acceleration.x = imu_burst_result_.acceleration.x;
   msg.linear_acceleration.y = imu_burst_result_.acceleration.y;
@@ -83,6 +84,7 @@ sensor_msgs::Temperature ImuNode::processTemperature() {
 
   return temp_msg;
 }
+
 sensor_msgs::FluidPressure ImuNode::processFluidpressure() {
   sensor_msgs::FluidPressure pressure_msg;
   pressure_msg.header.stamp = time_now_;

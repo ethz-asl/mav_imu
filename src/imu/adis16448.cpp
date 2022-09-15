@@ -4,7 +4,7 @@
 
 
 #include "imu/adis16448.h"
-#include "adis16448_cmds.h"
+#include "imu/adis16448_cmds.h"
 #include <iostream>
 #include <linux/spi/spidev.h>
 #include <cstring>
@@ -47,14 +47,20 @@ bool Adis16448::close() {
   return spi_driver_.close();
 }
 
-vec3<int> Adis16448::getGyro() {
-  vec3<int> gyro{};
+vec3<double> Adis16448::getGyro() {
+  // twos complement format, 25 LSB/°/sec, 0°/sec = 0x0000
+  vec3<double> gyro{};
 
   gyro.x = signedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}));
   gyro.y = signedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}));
   gyro.z = signedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}));
 
-  return gyro;
+  return convertGyro(gyro);
+}
+
+vec3<double> Adis16448::convertGyro(vec3<double> gyro) {
+  gyro /= 25.; // convert to degrees
+  return gyro * (M_PI / 180.); // Convert to rad/s and return
 }
 
 vec3<double> Adis16448::getAcceleration() {
@@ -65,16 +71,28 @@ vec3<double> Adis16448::getAcceleration() {
   acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}));
   acceleration.z = signedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}));
 
-  return acceleration;
+  return convertAcceleration(acceleration);
 }
 
-vec3<int> Adis16448::getMagnetometer() {
-  vec3<int> magnetometer{};
+vec3<double> Adis16448::convertAcceleration(vec3<double> accel) {
+  accel /= 1200.; //Convert to g
+  return accel * 9.80665;
+}
 
-  magnetometer.x = unsignedWordToInt(spi_driver_.xfer({XMAGN_OUT, 0x00}));
-  magnetometer.y = unsignedWordToInt(spi_driver_.xfer({YMAGN_OUT, 0x00}));
-  magnetometer.z = unsignedWordToInt(spi_driver_.xfer({ZMAGN_OUT, 0x00}));
+vec3<double> Adis16448::getMagnetometer() {
+  //twos complement, 7 LSB/mgauss, 0x0000 = 0 mgauss
+  vec3<double> magnetometer{};
 
+  magnetometer.x = signedWordToInt(spi_driver_.xfer({XMAGN_OUT, 0x00}));
+  magnetometer.y = signedWordToInt(spi_driver_.xfer({YMAGN_OUT, 0x00}));
+  magnetometer.z = signedWordToInt(spi_driver_.xfer({ZMAGN_OUT, 0x00}));
+
+  return convertMagnetometer(magnetometer);
+}
+
+vec3<double> Adis16448::convertMagnetometer(vec3<double> magnetometer) {
+  magnetometer /= 7.; //Convert to mG;
+  magnetometer /= 10000000.; // Convert to tesla
   return magnetometer;
 }
 
@@ -104,7 +122,8 @@ int Adis16448::signedWordToInt(const std::vector<byte> &word) {
 }
 
 ImuBurstResult Adis16448::burst() {
-  std::vector<std::vector<byte>> res = spi_driver_.burst({
+  std::vector<std::vector<byte>> res = spi_driver_.burst(
+      {
           {XGYRO_OUT, 0x00},
           {YGYRO_OUT, 0x00},
           {ZGYRO_OUT, 0x00},
@@ -118,21 +137,29 @@ ImuBurstResult Adis16448::burst() {
           {TEMP_OUT, 0x00}
       });
 
+  vec3<double> gyro_raw{};
+  gyro_raw.x = signedWordToInt(res[0]);
+  gyro_raw.y = signedWordToInt(res[1]);
+  gyro_raw.z = signedWordToInt(res[2]);
+
+  vec3<double> raw_accel{};
+  raw_accel.x = (double) signedWordToInt(res[3]);
+  raw_accel.y = (double) signedWordToInt(res[4]);
+  raw_accel.z = (double) signedWordToInt(res[5]);
+
+  vec3<double> raw_magn{};
+  raw_magn.x = signedWordToInt(res[6]);
+  raw_magn.y = signedWordToInt(res[7]);
+  raw_magn.z = signedWordToInt(res[8]);
 
   struct ImuBurstResult ret{};
-  ret.gyro = {signedWordToInt(res[0]), signedWordToInt(res[1]) ,signedWordToInt(res[2])};
-  ret.acceleration = {
-      (double) signedWordToInt(res[3]),
-      (double)signedWordToInt(res[4]),
-      (double)signedWordToInt(res[5])
-  };
-  ret.magnetometer = {
-      unsignedWordToInt(res[6]),
-      unsignedWordToInt(res[7]),
-      unsignedWordToInt(res[8])
-  };
+  ret.gyro = convertGyro(gyro_raw);
+  ret.acceleration = convertAcceleration(raw_accel);
+  ret.magnetometer = convertMagnetometer(raw_magn);
 
   ret.baro = unsignedWordToInt(res[9]) * 0.02;
   ret.temp = 31 + (signedWordToInt(res[10]) * 0.07386);
   return ret;
 }
+
+
