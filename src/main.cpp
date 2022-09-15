@@ -15,7 +15,7 @@ void SignalHandler(int signum) {
 int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
   signal(SIGINT, SignalHandler);
-  ros::init(argc, argv, "test_node");
+  ros::init(argc, argv, "mav_imu_node");
 
   ros::NodeHandle nh_private("~");
   std::string path = nh_private.param("spi_path", std::string("/dev/spidev0.1"));
