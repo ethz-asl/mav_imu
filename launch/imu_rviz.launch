@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find mav_imu)/launch/imu_default.launch"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 map world 5" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find mav_imu)/rviz/imu_demo.rviz"/>
+</launch>
