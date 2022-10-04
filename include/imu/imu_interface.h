@@ -37,7 +37,7 @@ inline vec3<T> operator*(const vec3<T> t, T num) {
 }
 
 template<typename T>
-inline vec3<T>& operator*=(vec3<T>& t, T num) {
+inline vec3<T> operator*=(vec3<T>& t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 

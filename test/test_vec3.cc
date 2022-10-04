@@ -44,9 +44,9 @@ TEST(vec3_overload, multiplication) {
 }
 
 TEST(vec3_overload, multiplication_assignment) {
-  //TODO fix
   vec3<int> a{4, 2, 1};
-  //a *= 2;
+
+  a *= 2;
   ASSERT_EQ(a.x, 8);
   ASSERT_EQ(a.y, 4);
   ASSERT_EQ(a.z, 2);
