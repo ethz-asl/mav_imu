@@ -27,14 +27,20 @@ $ source ~/catkin_ws/devel/setup.bash
 $ roslaunch mav_imu imu_default.launch
 ```
 
-5. Optionally run with `rviz`
+- Optionally run with `rviz`
 
 ```shell
 $ roslaunch mav_imu imu_rviz.launch
 ```
+
+- Optionally run with `imu_madgwick_filter`
+
+```shell
+$ rosrun imu_madgwick_filter imu_filter_node
+```
+
 ***
 
 There is also a kernel level driver but:
 
 ![](docs/adis16400.png)
-
