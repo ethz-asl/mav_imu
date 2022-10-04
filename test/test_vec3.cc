@@ -4,13 +4,12 @@
 #include <gtest/gtest.h>
 
 #include <imu/imu_interface.h>
-#include "log++/log++.h"
 
 
 TEST(vec3_toString, basic) {
   vec3<int> a{8, 4, 2};
 
-  ASSERT_EQ(a.toString(), "X: 8 Y: 4 Z: 2");
+  EXPECT_EQ(a.toString(), "X: 8 Y: 4 Z: 2");
 }
 
 TEST(vec3_overload, division) {
