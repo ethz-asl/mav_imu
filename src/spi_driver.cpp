@@ -99,17 +99,18 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
   }
 
   struct spi_ioc_transfer xfer[2];
-  unsigned char buf[32]{};
+  unsigned char buf[sizeof(__u64)]{};
 
   xfer->speed_hz = 2000000;
 
-  int len = 2;
+  int len = cmd.size();
   memset(xfer, 0, sizeof xfer);
   memset(buf, 0, sizeof buf);
 
-// Send a read command
-  buf[0] = cmd[0];
-  buf[1] = cmd[1];
+  // Send a read command
+  for (int i = 0; i < cmd.size(); i++) {
+    buf[i] = cmd[i];
+  }
 
   xfer[0].tx_buf = (unsigned long) buf;
   xfer[0].len = len;
