@@ -1,28 +1,39 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mav_imu)
 
-add_compile_options(-std=c++17)
+add_compile_options(-std=c++17 -w)
 
-find_package(catkin_simple)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        sensor_msgs
+        )
+find_package(roscpp)
 
-add_compile_definitions(MODE_ROSLOG) # Log++
+catkin_package(
+        INCLUDE_DIRS
+        CATKIN_DEPENDS roscpp
+)
 
-catkin_simple()
+include_directories(
+        include
+        lib/lpp/include
+        ${catkin_INCLUDE_DIRS})
 
-cs_add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME}
         src/spi_driver.cpp
         src/imu_node.cpp
         src/imu/adis16448.cpp
         )
 
-include_directories(lib/lpp/include)
 add_subdirectory(lib/lpp)
 target_link_directories(${PROJECT_NAME} PUBLIC lib/lpp)
-target_link_libraries(${PROJECT_NAME} Log++)
+target_link_libraries(${PROJECT_NAME} Log++ ${catkin_LIBRARIES})
 
-cs_add_executable(${PROJECT_NAME}_node
+add_executable(${PROJECT_NAME}_node
         src/main.cpp
         )
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC MODE_ROSLOG) # Log++
 
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
@@ -34,7 +45,4 @@ catkin_add_gtest(${PROJECT_NAME}_test
         )
 
 target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
-
-cs_install()
-cs_export()
 
