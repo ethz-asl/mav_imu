@@ -47,6 +47,13 @@ class Adis16448 : public ImuInterface {
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
  private:
+
+  /**
+   * Set all registers that are stored in flash backup to default values
+   * @return
+   */
+  void resetRegisters();
+
   //!Convert spi output to measurement unit required by the ImuInterface
 
  /**
@@ -66,6 +73,19 @@ class Adis16448 : public ImuInterface {
    * @return tesla [T]
    */
   static vec3<double> convertMagnetometer(vec3<double> magnetometer);
+
+  /**
+   * @param word
+   * @return
+   */
+  static double convertBarometer(const std::vector<byte>& word);
+
+  /**
+   * @param word
+   * @return
+   */
+  static double convertTemperature(const std::vector<byte>& word);
+
   SpiDriver spi_driver_;
 };
 

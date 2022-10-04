@@ -23,6 +23,8 @@ bool Adis16448::init() {
     LOG(E, "Setmode failed");
     return false;
   }
+
+  resetRegisters();
   return true;
 }
 
@@ -102,10 +104,18 @@ double Adis16448::getBarometer() {
   return res * 0.02;
 }
 
+double Adis16448::convertBarometer(const std::vector<byte>& word) {
+  return unsignedWordToInt(word) * 0.02;
+}
+
 double Adis16448::getTemperature() {
   //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
   int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}));
   return 31 + (a * 0.07386);
+}
+
+double Adis16448::convertTemperature(const std::vector<byte>& word) {
+  return 31 + (signedWordToInt(word) * 0.07386);
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
@@ -157,9 +167,36 @@ ImuBurstResult Adis16448::burst() {
   ret.acceleration = convertAcceleration(raw_accel);
   ret.magnetometer = convertMagnetometer(raw_magn);
 
-  ret.baro = unsignedWordToInt(res[9]) * 0.02;
-  ret.temp = 31 + (signedWordToInt(res[10]) * 0.07386);
+  ret.baro = convertBarometer(res[9]);
+  ret.temp = convertTemperature(res[10]);
   return ret;
 }
 
+void Adis16448::resetRegisters() {
+  static std::vector<std::vector<byte>> resetRegisters {
+      {XGYRO_OFF, 0x0},
+      {YGYRO_OFF, 0x0},
+      {ZGYRO_OFF, 0x0},
+      {XACCL_OFF, 0x0},
+      {YACCL_OFF, 0x0},
+      {ZACCL_OFF, 0x0},
+      {XMAGN_HIC, 0x0},
+      {YMAGN_HIC, 0x0},
+      {ZMAGN_HIC, 0x0},
+      {XMAGN_SIC, 0x0},
+      {YMAGN_SIC, 0x0},
+      {ZMAGN_SIC, 0x0},
+      {MSC_CTRL, 0x00, 0x06},
+      {SMPL_PRD, 0x00, 0x01},
+      {SENS_AVG, 0x04, 0x02},
+      {ALM_MAG1, 0x0},
+      {ALM_MAG2, 0x0},
+      {ALM_SMPL1, 0x0},
+      {ALM_SMPL2, 0x0},
+      {ALM_CTRL, 0x0},
+  };
 
+  for (const auto& regWrite : resetRegisters) {
+    spi_driver_.xfer(regWrite);
+  }
+}
