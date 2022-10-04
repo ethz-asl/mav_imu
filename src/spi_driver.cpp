@@ -103,7 +103,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
 
   xfer->speed_hz = 2000000;
 
-  int len = cmd.size();
+  int len = (int) cmd.size();
   memset(xfer, 0, sizeof xfer);
   memset(buf, 0, sizeof buf);
 
