@@ -9,7 +9,7 @@
 #include <utility>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <log++/log++.h>
+#include <log++.h>
 
 SpiDriver::SpiDriver(std::string path) : path_(std::move(path)) {}
 

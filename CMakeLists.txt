@@ -15,6 +15,11 @@ cs_add_library(${PROJECT_NAME}
         src/imu/adis16448.cpp
         )
 
+include_directories(lib/lpp/include)
+add_subdirectory(lib/lpp)
+target_link_directories(${PROJECT_NAME} PUBLIC lib/lpp)
+target_link_libraries(${PROJECT_NAME} Log++)
+
 cs_add_executable(${PROJECT_NAME}_node
         src/main.cpp
         )
