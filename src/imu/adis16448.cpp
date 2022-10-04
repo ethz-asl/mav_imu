@@ -8,7 +8,7 @@
 #include <iostream>
 #include <linux/spi/spidev.h>
 #include <cstring>
-#include "log++/log++.h"
+#include <log++.h>
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 

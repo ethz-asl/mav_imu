@@ -1,8 +1,8 @@
 #include <csignal>
 #include "imu_node.h"
+#include <log++.h>
 #include <ros/ros.h>
 #include "imu/adis16448.h"
-#include <log++/log++.h>
 
 void SignalHandler(int signum) {
   if (signum == SIGINT) {
@@ -10,7 +10,6 @@ void SignalHandler(int signum) {
     ImuNode::run_node = false;
   }
 }
-
 
 int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
