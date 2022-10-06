@@ -41,6 +41,10 @@ inline vec3<T> operator*=(vec3<T>& t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 
+namespace IImu {
+inline static constexpr const int NaN = std::numeric_limits<int>::quiet_NaN();
+}
+using namespace IImu;
 
 class ImuBurstResult {
  public:
@@ -49,9 +53,6 @@ class ImuBurstResult {
   vec3<double> magnetometer = {NaN, NaN, NaN};
   double baro{NaN};
   double temp{NaN};
-
- private:
-  inline static constexpr const int NaN = std::numeric_limits<int>::quiet_NaN();
 };
 
 class ImuInterface {
@@ -84,19 +85,25 @@ class ImuInterface {
   virtual vec3<double> getAcceleration() = 0;
 
   //! magnetometer measurement
-  virtual vec3<double> getMagnetometer() = 0;
+  virtual vec3<double> getMagnetometer() {
+    return {NaN, NaN, NaN};
+  };
 
   /**
    * Gets barometric pressure
    * @return QFE pressure in hPa
    */
-  virtual double getBarometer() = 0;
+  virtual double getBarometer() {
+    return NaN;
+  };
 
   /**
    * Gets temperature
    * @return temperature in °C
    */
-  virtual double getTemperature() = 0;
+  virtual double getTemperature() {
+    return NaN;
+  };
 
   /**
    * Generic function to read spi register
