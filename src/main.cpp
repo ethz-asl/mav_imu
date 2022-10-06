@@ -31,5 +31,8 @@ int main(int argc, char **argv) {
     LOG(F, "Imu init failed.");
     return -1;
   }
-  return node.run();
+  node.run();
+
+  delete imu_interface; //Call destructor to close spi device
+  return 0;
 }
