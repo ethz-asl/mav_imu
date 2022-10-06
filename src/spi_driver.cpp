@@ -20,6 +20,7 @@ bool SpiDriver::open() {
     LOG(E, "Error on open: " << strerror(errno));
     return false;
   }
+  is_open_ = true;
   return true;
 }
 
@@ -92,14 +93,14 @@ std::vector<std::vector<byte>> SpiDriver::burst(const std::vector<std::vector<by
   return res;
 }
 
-std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
-  if (cmd.size() > sizeof(__u64)) {
-    LOG(E, "cmd buffer to big " << cmd.size() << " > " << sizeof(__u64));
+std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, int response_len) const {
+  if (cmd.size() > 32) {
+    LOG(E, "cmd buffer to big " << cmd.size() << " > " << 32);
     return {};
   }
 
   struct spi_ioc_transfer xfer[2];
-  unsigned char buf[sizeof(__u64)]{};
+  unsigned char buf[32]{};
 
   xfer->speed_hz = 2000000;
 
@@ -113,12 +114,12 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
   }
 
   xfer[0].tx_buf = (unsigned long) buf;
-  xfer[0].len = len;
+  xfer[0].len = cmd.size();
 
   unsigned char buf2[len];
   memset(buf2, 0, sizeof buf2);
   xfer[1].rx_buf = (unsigned long) buf2;
-  xfer[1].len = len;
+  xfer[1].len = response_len;
 
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
@@ -134,15 +135,28 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd) const {
   return res;
 }
 
-bool SpiDriver::close() const {
+bool SpiDriver::close() {
   if (::close(fd_) != 0) {
     LOG(I, "Error closing fd: " << strerror(errno));
     return false;
   }
+  is_open_ = false;
   return true;
 }
 
 SpiDriver::~SpiDriver() {
   ::close(fd_);
+}
+
+bool SpiDriver::isOpen() const {
+  return is_open_;
+}
+
+int SpiDriver::getFd() const {
+  return fd_;
+}
+
+const std::string &SpiDriver::getPath() const {
+  return path_;
 }
 

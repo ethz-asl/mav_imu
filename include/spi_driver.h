@@ -19,17 +19,22 @@ class SpiDriver {
   /**
    * Spi transaction
    *
-   * @param cmd vector with 2 bytes
+   * @param cmd vector with multiple bytes, defaults to 2 for compatibility reasons
    * @return vector with response or empty vector on failure
    */
-  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd) const;
+  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd, int response_len = 2) const;
   [[nodiscard]] std::vector<std::vector<byte>> burst(const std::vector<std::vector<byte>>& cmd) const;
 
-  bool close() const; // NOLINT(modernize-use-nodiscard)
+  bool close();
 
   ~SpiDriver();
 
+  //! Getters
+  [[nodiscard]] bool isOpen() const;
+  [[nodiscard]] int getFd() const;
+  [[nodiscard]] const std::string &getPath() const;
  private:
+  bool is_open_{false};
   int fd_{};
   std::string path_;
 };

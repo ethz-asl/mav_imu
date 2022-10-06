@@ -13,10 +13,6 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), freque
 }
 
 bool ImuNode::init() {
-
-  if (!imu_interface_.init()) {
-    return false;
-  }
   if (!imu_interface_.selftest()) {
     return true;
   }

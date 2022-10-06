@@ -16,6 +16,13 @@ class Adis16448 : public ImuInterface {
    */
   explicit Adis16448(const std::string &path);
 
+  /**
+   * Enable crc checksum check on burst read
+   * @param b
+   * @return true if successful, otherwise false
+   */
+  bool setBurstCRCEnabled(bool b);
+
   bool selftest() override;
   bool init() override;
   vec3<double> getGyro() override;
@@ -46,7 +53,17 @@ class Adis16448 : public ImuInterface {
 
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
+  static bool validateCrc(const std::vector<byte>& burstData);
+
  private:
+  /**
+   * Adis16448 specific burst function.
+   * @return burst read on success, otherwise empty vector
+   */
+  std::vector<byte> customBurst();
+
+  static unsigned short int runCRC(const uint16_t burstData[]);
+  static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
   /**
    * Set all registers that are stored in flash backup to default values
@@ -87,6 +104,8 @@ class Adis16448 : public ImuInterface {
   static double convertTemperature(const std::vector<byte>& word);
 
   SpiDriver spi_driver_;
+  int burst_len_{DEFAULT_BURST_LEN};
+  int crc_error_count_{0};
 };
 
 #endif //MAV_IMU_SRC_IMU_ADIS16448_H_
