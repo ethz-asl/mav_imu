@@ -34,7 +34,7 @@ bool SpiDriver::setMode(uint8_t mode) const {
   return true;
 }
 
-std::vector<std::vector<byte>> SpiDriver::burst(const std::vector<std::vector<byte>> &cmds) const {
+std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds) const {
 
   std::vector<std::vector<byte>> res{};
   for (int i = 0; i < cmds.size() + 1; i++) {
