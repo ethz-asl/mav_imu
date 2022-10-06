@@ -64,6 +64,10 @@ class ImuInterface {
    */
   virtual bool selftest() = 0;
 
+  /**
+   * Cleanup and close files used by IMU
+   * @return
+   */
   virtual bool close() = 0;
 
   /**
@@ -72,24 +76,15 @@ class ImuInterface {
    */
   virtual vec3<double> getGyro() = 0;
 
-  //! gyroscope bias offset factor
-  //virtual vec3<int> getGyroscopeOffset() = 0;
-
   /**
    * Gets acceleration data vector
    *
    * @return acceleration in m/s² as double
    */
   virtual vec3<double> getAcceleration() = 0;
-  //! acceleration bias offset factor
-  //virtual vec3<T> getAccelerometerOffset() = 0;
 
   //! magnetometer measurement
   virtual vec3<double> getMagnetometer() = 0;
-  //! magnetometer hard iron factor
-  //virtual vec3<T> getMagnetometerHic() = 0;
-  //! magnetometer soft iron factor
-  //virtual vec3<T> getMagnetometerSic() = 0;
 
   /**
    * Gets barometric pressure
