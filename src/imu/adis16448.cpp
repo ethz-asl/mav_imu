@@ -14,6 +14,7 @@
 
 const uint32_t kNormalSpeedHz = 2000000;
 const uint32_t kBurstSpeedHz = 1000000;
+const uint32_t kWaitUs = 100e3;
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
@@ -34,8 +35,29 @@ bool Adis16448::init() {
     return false;
   }
 
+  // Software reset.
+  LOG(I, "Adis16448 software reset.");
+  writeReg(GLOB_CMD, {0x0, 1 << 7}, "GLOB_CMD");
+  usleep(kWaitUs);
 
-  //resetRegisters();
+  // Calibration factory reset.
+
+  // TODO(rikba): Gyro auto-calibration.
+
+  // General configuration.
+  LOG(I, "Adis16448 configuration.");
+  std::vector<byte> msc_ctrl = {0x00, 0x06};
+  writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
+
+  std::vector<byte> smpl_prd = {0x00, 0x01};
+  writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
+
+  std::vector<byte> sens_avg = {0x04, 0x02};
+  sens_avg[1] = (~(0b111 << 0)) & msc_ctrl[1]; // Clear digital filter. 
+  writeReg(SENS_AVG, sens_avg, "SENS_AVG");
+
+  // Light LED on 
+
   return true;
 }
 
@@ -43,7 +65,9 @@ std::vector<byte> Adis16448::readReg(const uint8_t addr) {
   return spi_driver_.xfer(CMD(addr), kNormalSpeedHz);
 }
 
-void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data) {
+void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data, const std::string& name) {
+  // TODO(rikba): I don't know how to do hex formatting with lpp. Replace comma with two digit hex
+  LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
@@ -57,13 +81,14 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data) {
 
 bool Adis16448::selftest() {
   // Start self test.
+  LOG(I, "Adis16448 self-test.");
   auto msc_ctrl = readReg(MSC_CTRL);
   msc_ctrl[0] = (1 << 2) | msc_ctrl[0]; // Set bit 10 (3rd high bit).
-  writeReg(MSC_CTRL, msc_ctrl);
+  writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
 
   while (msc_ctrl[0] & (1 << 2)) {
-    LOG(I, "Performing self test.");
-    usleep(100e3); // Self test requires 45ms. Wait 100ms. 
+    LOG(D, "Testing.");
+    usleep(kWaitUs); // Self test requires 45ms. Wait 100ms. 
     msc_ctrl = readReg(MSC_CTRL);
   }
 
@@ -189,42 +214,11 @@ int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
 }
 
-void Adis16448::resetRegisters() {
-  static std::vector<std::vector<byte>> resetRegisters{
-      {XGYRO_OFF, 0x0},
-      {YGYRO_OFF, 0x0},
-      {ZGYRO_OFF, 0x0},
-      {XACCL_OFF, 0x0},
-      {YACCL_OFF, 0x0},
-      {ZACCL_OFF, 0x0},
-      {XMAGN_HIC, 0x0},
-      {YMAGN_HIC, 0x0},
-      {ZMAGN_HIC, 0x0},
-      {XMAGN_SIC, 0x0},
-      {YMAGN_SIC, 0x0},
-      {ZMAGN_SIC, 0x0},
-      {MSC_CTRL, 0x00, 0x06},
-      {SMPL_PRD, 0x00, 0x01},
-      {SENS_AVG, 0x04, 0x02},
-      {ALM_MAG1, 0x0},
-      {ALM_MAG2, 0x0},
-      {ALM_SMPL1, 0x0},
-      {ALM_SMPL2, 0x0},
-      {ALM_CTRL, 0x0},
-  };
-
-  for (const auto &regWrite: resetRegisters) {
-    spi_driver_.xfer(regWrite, kNormalSpeedHz);
-  }
-
-  LOG(I, "Adis16448 registers resetted.");
-}
-
 bool Adis16448::setBurstCRCEnabled(bool b) {
   if (b) {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
-    writeReg(MSC_CTRL, msc_ctrl);
+    writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
     usleep(1e3); //wait 1ms
     auto res = readReg(MSC_CTRL);
 
@@ -240,7 +234,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
   } else {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
-    writeReg(MSC_CTRL, msc_ctrl);
+    writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
     usleep(1e3); //wait 1ms
     auto res = readReg(MSC_CTRL);
 
