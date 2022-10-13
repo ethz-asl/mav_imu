@@ -39,6 +39,16 @@ class Adis16448 : public ImuInterface {
   double getTemperature() override;
   int getRaw(std::vector<byte> cmd) override;
 
+  /** 
+   * Helper function to read a registry entry.
+   */
+  std::vector<byte> readReg(const uint8_t addr);
+
+  /**
+   * Helper function to overwrite a registry entry.
+   */
+  void writeReg(const uint8_t addr, const std::vector<byte>& data);
+
   /**
    * Custom burst mode
    * @return struct with all values.

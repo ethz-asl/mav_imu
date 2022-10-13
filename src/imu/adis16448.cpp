@@ -34,20 +34,55 @@ bool Adis16448::init() {
     return false;
   }
 
-  resetRegisters();
+  //resetRegisters();
   return true;
 }
 
+std::vector<byte> Adis16448::readReg(const uint8_t addr) {
+  return spi_driver_.xfer(CMD(addr), kNormalSpeedHz);
+}
+
+void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data) {
+  // Set MSB
+  addr = (addr & 0x7F) | 0x80;
+  // Send low word.
+  spi_driver_.xfer({addr, data[1]}, kNormalSpeedHz);
+  // Increment address.
+  addr = (addr | 0x1);
+  // Send high word.
+  spi_driver_.xfer({addr, data[0]}, kNormalSpeedHz);
+}
+
+
 bool Adis16448::selftest() {
-  std::vector<byte> res = spi_driver_.xfer(CMD(DIAG_STAT), kNormalSpeedHz);
+  // Start self test.
+  auto msc_ctrl = readReg(MSC_CTRL);
+  msc_ctrl[0] = (1 << 2) | msc_ctrl[0]; // Set bit 10 (3rd high bit).
+  writeReg(MSC_CTRL, msc_ctrl);
+
+  while (msc_ctrl[0] & (1 << 2)) {
+    LOG(I, "Performing self test.");
+    usleep(100e3); // Self test requires 45ms. Wait 100ms. 
+    msc_ctrl = readReg(MSC_CTRL);
+  }
+
+  std::vector<byte> res = readReg(DIAG_STAT);
 
   if (res.empty()) {
     return false;
   }
 
-  if ((res[1] << 8) + res[0] ^ 0x00) {
-    //TODO evaluate response
-    LOG(E, "Imu self-check failed");
+  if (res[1] & (1 << 5)) {
+    LOG(E, "ADIS16448 self-test failed.");
+    LOG(E, res[1] & (1 << 0), "Magnetometer functional test failure.");
+    LOG(E, res[1] & (1 << 1), "Barometer functional test failure.");
+    LOG(E, res[0] & (1 << 2), "X-axis gyroscope self-test failure.");
+    LOG(E, res[0] & (1 << 3), "Y-axis gyroscope self-test failure.");
+    LOG(E, res[0] & (1 << 4), "Z-axis gyroscope self-test failure.");
+    LOG(E, res[0] & (1 << 5), "X-axis accelerometer self-test failure.");
+    LOG(E, res[0] & (1 << 6), "Y-axis accelerometer self-test failure.");
+    LOG(E, res[0] & (1 << 7), "Z-axis accelerometer self-test failure.");
+
     return false;
   }
 
@@ -56,7 +91,7 @@ bool Adis16448::selftest() {
 }
 
 bool Adis16448::testSPI() {
-  std::vector<byte> res = spi_driver_.xfer(CMD(PROD_ID), kNormalSpeedHz);
+  auto res = readReg(PROD_ID);
 
   if (res.empty()) {
     return false;
