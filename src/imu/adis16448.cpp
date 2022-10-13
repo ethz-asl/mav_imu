@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+const uint32_t kNormalSpeedHz = 2000000;
+const uint32_t kBurstSpeedHz = 1000000;
+
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
 bool Adis16448::init() {
@@ -31,7 +34,7 @@ bool Adis16448::init() {
 }
 
 bool Adis16448::selftest() {
-  std::vector<byte> res = spi_driver_.xfer(CMD(DIAG_STAT));
+  std::vector<byte> res = spi_driver_.xfer(CMD(DIAG_STAT), kNormalSpeedHz);
 
   if (res.empty()) {
     return false;
@@ -55,9 +58,9 @@ vec3<double> Adis16448::getGyro() {
   // twos complement format, 25 LSB/°/sec, 0°/sec = 0x0000
   vec3<double> gyro{};
 
-  gyro.x = signedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}));
-  gyro.y = signedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}));
-  gyro.z = signedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}));
+  gyro.x = signedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}, kNormalSpeedHz));
+  gyro.y = signedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}, kNormalSpeedHz));
+  gyro.z = signedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}, kNormalSpeedHz));
 
   return convertGyro(gyro);
 }
@@ -71,9 +74,9 @@ vec3<double> Adis16448::getAcceleration() {
   //twos complement format, 1200 LSB/g, 0 g = 0x0000
   vec3<double> acceleration{};
 
-  acceleration.x = signedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}));
-  acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}));
-  acceleration.z = signedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}));
+  acceleration.x = signedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}, kNormalSpeedHz));
+  acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}, kNormalSpeedHz));
+  acceleration.z = signedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}, kNormalSpeedHz));
 
   return convertAcceleration(acceleration);
 }
@@ -87,9 +90,9 @@ vec3<double> Adis16448::getMagnetometer() {
   //twos complement, 7 LSB/mgauss, 0x0000 = 0 mgauss
   vec3<double> magnetometer{};
 
-  magnetometer.x = signedWordToInt(spi_driver_.xfer({XMAGN_OUT, 0x00}));
-  magnetometer.y = signedWordToInt(spi_driver_.xfer({YMAGN_OUT, 0x00}));
-  magnetometer.z = signedWordToInt(spi_driver_.xfer({ZMAGN_OUT, 0x00}));
+  magnetometer.x = signedWordToInt(spi_driver_.xfer({XMAGN_OUT, 0x00}, kNormalSpeedHz));
+  magnetometer.y = signedWordToInt(spi_driver_.xfer({YMAGN_OUT, 0x00}, kNormalSpeedHz));
+  magnetometer.z = signedWordToInt(spi_driver_.xfer({ZMAGN_OUT, 0x00}, kNormalSpeedHz));
 
   return convertMagnetometer(magnetometer);
 }
@@ -102,7 +105,7 @@ vec3<double> Adis16448::convertMagnetometer(vec3<double> magnetometer) {
 
 double Adis16448::getBarometer() {
   //20 μbar per LSB, 0x0000 = 0 mbar
-  int res = unsignedWordToInt(spi_driver_.xfer({BARO_OUT, 0x00}));
+  int res = unsignedWordToInt(spi_driver_.xfer({BARO_OUT, 0x00}, kNormalSpeedHz));
   return res * 0.02;
 }
 
@@ -112,7 +115,7 @@ double Adis16448::convertBarometer(const std::vector<byte> &word) {
 
 double Adis16448::getTemperature() {
   //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
-  int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}));
+  int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}, kNormalSpeedHz));
   return 31 + (a * 0.07386);
 }
 
@@ -121,7 +124,7 @@ double Adis16448::convertTemperature(const std::vector<byte> &word) {
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
-  std::vector<byte> res = spi_driver_.xfer(cmd);
+  std::vector<byte> res = spi_driver_.xfer(cmd, kNormalSpeedHz);
   return unsignedWordToInt(res);
 }
 
@@ -158,7 +161,7 @@ void Adis16448::resetRegisters() {
   };
 
   for (const auto &regWrite: resetRegisters) {
-    spi_driver_.xfer(regWrite);
+    spi_driver_.xfer(regWrite, kNormalSpeedHz);
   }
 
   LOG(I, "Adis16448 registers resetted.");
@@ -168,9 +171,9 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
   if (b) {
     //Add 0x80 to MSC_CTRL to indicate write operation
     //Default MSC_CTRL value is 0x06 set to 0x10 to append crc on burst
-    spi_driver_.xfer({MSC_CTRL + 0x80, 0x10});
+    spi_driver_.xfer({MSC_CTRL + 0x80, 0x10}, kNormalSpeedHz);
     usleep(1e3); //wait 1ms
-    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00});
+    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00}, kNormalSpeedHz);
 
     if (res[0] == 0 && res[1] == 0x10) {
       //increase rx buffer length by 2 bytes for 16bit crc value
@@ -184,10 +187,10 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
   } else {
 
     //Set MSC_CTRL to default value
-    spi_driver_.xfer({MSC_CTRL + 0x80, 0x06});
+    spi_driver_.xfer({MSC_CTRL + 0x80, 0x06}, kNormalSpeedHz);
     usleep(1e3); //wait 1ms
 
-    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00});
+    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00}, kNormalSpeedHz);
     if (res[0] == 0 && res[1] == 0x06) {
       burst_len_ = DEFAULT_BURST_LEN;
 
@@ -305,6 +308,7 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
 std::vector<byte> Adis16448::customBurst() {
 
   struct spi_ioc_transfer xfer[2];
+  xfer->speed_hz = kBurstSpeedHz;
   unsigned char	buf[32];
   int status;
   if (!spi_driver_.isOpen()) {
