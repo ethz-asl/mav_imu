@@ -102,8 +102,6 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
   struct spi_ioc_transfer xfer[2];
   unsigned char buf[32]{};
 
-  xfer->speed_hz = speed_hz;
-
   int len = (int) cmd.size();
   memset(xfer, 0, sizeof xfer);
   memset(buf, 0, sizeof buf);
@@ -111,6 +109,8 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
   // Send a read command
   for (int i = 0; i < cmd.size(); i++) {
     buf[i] = cmd[i];
+    xfer[i].speed_hz = speed_hz;
+    xfer[i].bits_per_word = CHAR_BIT;
   }
 
   xfer[0].tx_buf = (unsigned long) buf;
@@ -127,10 +127,10 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
     return {};
   }
 
-  std::vector<unsigned char> res{};
+  std::vector<unsigned char> res(len);
 
   for (int i = 0; i < len; i++) {
-    res.push_back(buf2[i]);
+    res[i] = buf2[i];
   }
   return res;
 }
