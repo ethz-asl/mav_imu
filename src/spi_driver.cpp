@@ -34,7 +34,7 @@ bool SpiDriver::setMode(uint8_t mode) const {
   return true;
 }
 
-std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds) const {
+std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds, const uint32_t speed_hz) const {
 
   std::vector<std::vector<byte>> res{};
   for (int i = 0; i < cmds.size() + 1; i++) {
@@ -55,7 +55,7 @@ std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<by
     struct spi_ioc_transfer xfer[1];
     unsigned char buf[32]{};
 
-    xfer->speed_hz = 2000000;
+    xfer->speed_hz = speed_hz;
 
     int len = 2;
     memset(xfer, 0, sizeof xfer);
@@ -93,7 +93,7 @@ std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<by
   return res;
 }
 
-std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, int response_len) const {
+std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, int response_len, const uint32_t speed_hz) const {
   if (cmd.size() > 32) {
     LOG(E, "cmd buffer to big " << cmd.size() << " > " << 32);
     return {};
@@ -102,7 +102,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, int response_len
   struct spi_ioc_transfer xfer[2];
   unsigned char buf[32]{};
 
-  xfer->speed_hz = 2000000;
+  xfer->speed_hz = speed_hz;
 
   int len = (int) cmd.size();
   memset(xfer, 0, sizeof xfer);
