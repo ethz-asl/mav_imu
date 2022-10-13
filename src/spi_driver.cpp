@@ -116,7 +116,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
   xfer[0].tx_buf = (unsigned long) buf;
   xfer[0].len = cmd.size();
 
-  unsigned char buf2[len];
+  unsigned char buf2[response_len];
   memset(buf2, 0, sizeof buf2);
   xfer[1].rx_buf = (unsigned long) buf2;
   xfer[1].len = response_len;
@@ -127,9 +127,9 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
     return {};
   }
 
-  std::vector<unsigned char> res(len);
+  std::vector<unsigned char> res(response_len);
 
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < response_len; i++) {
     res[i] = buf2[i];
   }
   return res;
