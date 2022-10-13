@@ -34,6 +34,7 @@ bool Adis16448::init() {
     return false;
   }
 
+
   //resetRegisters();
   return true;
 }
@@ -110,9 +111,9 @@ vec3<double> Adis16448::getGyro() {
   // twos complement format, 25 LSB/°/sec, 0°/sec = 0x0000
   vec3<double> gyro{};
 
-  gyro.x = signedWordToInt(spi_driver_.xfer({XGYRO_OUT, 0x00}, kNormalSpeedHz));
-  gyro.y = signedWordToInt(spi_driver_.xfer({YGYRO_OUT, 0x00}, kNormalSpeedHz));
-  gyro.z = signedWordToInt(spi_driver_.xfer({ZGYRO_OUT, 0x00}, kNormalSpeedHz));
+  gyro.x = signedWordToInt(readReg(XGYRO_OUT));
+  gyro.y = signedWordToInt(readReg(YGYRO_OUT));
+  gyro.z = signedWordToInt(readReg(ZGYRO_OUT));
 
   return convertGyro(gyro);
 }
@@ -126,9 +127,9 @@ vec3<double> Adis16448::getAcceleration() {
   //twos complement format, 1200 LSB/g, 0 g = 0x0000
   vec3<double> acceleration{};
 
-  acceleration.x = signedWordToInt(spi_driver_.xfer({XACCL_OUT, 0x00}, kNormalSpeedHz));
-  acceleration.y = signedWordToInt(spi_driver_.xfer({YACCL_OUT, 0x00}, kNormalSpeedHz));
-  acceleration.z = signedWordToInt(spi_driver_.xfer({ZACCL_OUT, 0x00}, kNormalSpeedHz));
+  acceleration.x = signedWordToInt(readReg(XACCL_OUT));
+  acceleration.y = signedWordToInt(readReg(YACCL_OUT));
+  acceleration.z = signedWordToInt(readReg(ZACCL_OUT));
 
   return convertAcceleration(acceleration);
 }
@@ -142,9 +143,9 @@ vec3<double> Adis16448::getMagnetometer() {
   //twos complement, 7 LSB/mgauss, 0x0000 = 0 mgauss
   vec3<double> magnetometer{};
 
-  magnetometer.x = signedWordToInt(spi_driver_.xfer({XMAGN_OUT, 0x00}, kNormalSpeedHz));
-  magnetometer.y = signedWordToInt(spi_driver_.xfer({YMAGN_OUT, 0x00}, kNormalSpeedHz));
-  magnetometer.z = signedWordToInt(spi_driver_.xfer({ZMAGN_OUT, 0x00}, kNormalSpeedHz));
+  magnetometer.x = signedWordToInt(readReg(XMAGN_OUT));
+  magnetometer.y = signedWordToInt(readReg(YMAGN_OUT));
+  magnetometer.z = signedWordToInt(readReg(ZMAGN_OUT));
 
   return convertMagnetometer(magnetometer);
 }
@@ -157,7 +158,7 @@ vec3<double> Adis16448::convertMagnetometer(vec3<double> magnetometer) {
 
 double Adis16448::getBarometer() {
   //20 μbar per LSB, 0x0000 = 0 mbar
-  int res = unsignedWordToInt(spi_driver_.xfer({BARO_OUT, 0x00}, kNormalSpeedHz));
+  int res = unsignedWordToInt(readReg(BARO_OUT));
   return res * 0.02;
 }
 
@@ -167,7 +168,7 @@ double Adis16448::convertBarometer(const std::vector<byte> &word) {
 
 double Adis16448::getTemperature() {
   //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
-  int a = signedWordToInt(spi_driver_.xfer({TEMP_OUT, 0x00}, kNormalSpeedHz));
+  int a = signedWordToInt(readReg(TEMP_OUT));
   return 31 + (a * 0.07386);
 }
 
@@ -221,13 +222,13 @@ void Adis16448::resetRegisters() {
 
 bool Adis16448::setBurstCRCEnabled(bool b) {
   if (b) {
-    //Add 0x80 to MSC_CTRL to indicate write operation
-    //Default MSC_CTRL value is 0x06 set to 0x10 to append crc on burst
-    spi_driver_.xfer({MSC_CTRL + 0x80, 0x10}, kNormalSpeedHz);
+    auto msc_ctrl = readReg(MSC_CTRL);
+    msc_ctrl[1] = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
+    writeReg(MSC_CTRL, msc_ctrl);
     usleep(1e3); //wait 1ms
-    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00}, kNormalSpeedHz);
+    auto res = readReg(MSC_CTRL);
 
-    if (res[0] == 0 && res[1] == 0x10) {
+    if (res[1] & (1 << 4)) {
       //increase rx buffer length by 2 bytes for 16bit crc value
       burst_len_ = DEFAULT_BURST_LEN + 2;
       LOG(I, "Enabled CRC on burst");
@@ -237,13 +238,13 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     LOG(E, "Error on burst mode enable");
     return false;
   } else {
-
-    //Set MSC_CTRL to default value
-    spi_driver_.xfer({MSC_CTRL + 0x80, 0x06}, kNormalSpeedHz);
+    auto msc_ctrl = readReg(MSC_CTRL);
+    msc_ctrl[1] = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
+    writeReg(MSC_CTRL, msc_ctrl);
     usleep(1e3); //wait 1ms
+    auto res = readReg(MSC_CTRL);
 
-    std::vector<byte> res = spi_driver_.xfer({MSC_CTRL, 0x00}, kNormalSpeedHz);
-    if (res[0] == 0 && res[1] == 0x06) {
+    if (!(res[1] & (1 << 4))) {
       burst_len_ = DEFAULT_BURST_LEN;
 
       LOG(I, "Disabled CRC on burst");
