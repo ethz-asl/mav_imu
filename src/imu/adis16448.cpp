@@ -29,6 +29,11 @@ bool Adis16448::init() {
     return false;
   }
 
+  if (!testSPI()) {
+    LOG(E, "SPI test read failed.");
+    return false;
+  }
+
   resetRegisters();
   return true;
 }
@@ -48,6 +53,18 @@ bool Adis16448::selftest() {
 
   LOG(I, "Adis16448 self-check passed");
   return true;
+}
+
+bool Adis16448::testSPI() {
+  std::vector<byte> res = spi_driver_.xfer(CMD(PROD_ID), kNormalSpeedHz);
+
+  if (res.empty()) {
+    return false;
+  }
+
+  LOG(I, std::hex << "Adis16448 PROD_ID: 0x" << +res[0] << +res[1]);
+
+  return res[0] == 0x40 && res[1] == 0x40;
 }
 
 bool Adis16448::close() {

@@ -66,6 +66,11 @@ class Adis16448 : public ImuInterface {
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
   /**
+   * Run a test read sequence for SPI communcation.
+   */
+  bool testSPI();
+
+  /**
    * Set all registers that are stored in flash backup to default values
    * @return
    */
