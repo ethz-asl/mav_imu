@@ -17,6 +17,11 @@ class Adis16448 : public ImuInterface {
   explicit Adis16448(const std::string &path);
 
   /**
+   * Adis16448 Destructor
+   */
+  ~Adis16448();
+
+  /**
    * Enable crc checksum check on burst read
    * @param b
    * @return true if successful, otherwise false

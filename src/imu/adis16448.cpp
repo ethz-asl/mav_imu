@@ -18,6 +18,13 @@ const uint32_t kWaitUs = 100e3;
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
+Adis16448::~Adis16448() {
+  // TODO(rikba): This does not work...
+  std::vector<byte> gpio_ctrl = readReg(GPIO_CTRL);
+  gpio_ctrl[1] &= ~(1 << 1); // Clear DIO2 output to disable LED.
+  writeReg(GPIO_CTRL, gpio_ctrl, "GPIO_CTRL");
+}
+
 bool Adis16448::init() {
 
   if (!spi_driver_.open()) {
@@ -53,10 +60,16 @@ bool Adis16448::init() {
   writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
 
   std::vector<byte> sens_avg = {0x04, 0x02};
-  sens_avg[1] = (~(0b111 << 0)) & msc_ctrl[1]; // Clear digital filter. 
+  sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
 
-  // Light LED on 
+  std::vector<byte> alm_ctrl = {0x00, 0x00};
+  writeReg(ALM_CTRL, alm_ctrl, "ALM_CTRL");
+
+  std::vector<byte> gpio_ctrl = {0x00, 0x00};
+  gpio_ctrl[0] &= ~(1 << 1); // Clear DIO2 to light LED.
+  gpio_ctrl[1] |= (1 << 1); // Set DIO2 output.
+  writeReg(GPIO_CTRL, gpio_ctrl, "GPIO_CTRL");
 
   return true;
 }
