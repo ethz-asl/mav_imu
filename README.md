@@ -12,7 +12,7 @@ $ sudo apt-get install ros-noetic-imu-tools
 
 2. Go to the catkin workspace and clone this repo in the `src` folder and build it with
 ```shell
-$ git clone https://github.com/ethz-asl/mav_imu.git
+$ git clone --recurse-submodules https://github.com/ethz-asl/mav_imu.git
 $ catkin build mav_imu
 ```
 3. Source environment
