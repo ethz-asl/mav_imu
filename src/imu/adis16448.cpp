@@ -160,6 +160,8 @@ void Adis16448::resetRegisters() {
   for (const auto &regWrite: resetRegisters) {
     spi_driver_.xfer(regWrite);
   }
+
+  LOG(I, "Adis16448 registers resetted.");
 }
 
 bool Adis16448::setBurstCRCEnabled(bool b) {
