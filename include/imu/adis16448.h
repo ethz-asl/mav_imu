@@ -71,12 +71,6 @@ class Adis16448 : public ImuInterface {
   static bool validateCrc(const std::vector<byte>& burstData);
 
  private:
-  /**
-   * Adis16448 specific burst function.
-   * @return burst read on success, otherwise empty vector
-   */
-  std::vector<byte> customBurst();
-
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 

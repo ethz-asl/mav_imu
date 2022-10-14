@@ -93,12 +93,7 @@ std::vector<std::vector<byte>> SpiDriver::xfer2(const std::vector<std::vector<by
   return res;
 }
 
-std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t speed_hz, int response_len) const {
-  if (cmd.size() > 32) {
-    LOG(E, "cmd buffer to big " << cmd.size() << " > " << 32);
-    return {};
-  }
-
+std::vector<byte> SpiDriver::xfer(const std::vector<byte>& cmd, const int response_len, const uint32_t speed_hz) const {
   // Create one transfer to send command and one to receive response.
   struct spi_ioc_transfer xfer[2];
   memset(xfer, 0, sizeof xfer);

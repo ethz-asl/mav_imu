@@ -76,7 +76,7 @@ bool Adis16448::init() {
 }
 
 std::vector<byte> Adis16448::readReg(const uint8_t addr) {
-  return spi_driver_.xfer(CMD(addr), kNormalSpeedHz, kResponseSize);
+  return spi_driver_.xfer(CMD(addr), kResponseSize, kNormalSpeedHz);
 }
 
 void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data, const std::string& name) {
@@ -85,11 +85,11 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data, const std:
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
-  spi_driver_.xfer({addr, data[1]}, kNormalSpeedHz);
+  spi_driver_.xfer({addr, data[1]}, 0, kNormalSpeedHz);
   // Increment address.
   addr = (addr | 0x1);
   // Send high word.
-  spi_driver_.xfer({addr, data[0]}, kNormalSpeedHz);
+  spi_driver_.xfer({addr, data[0]}, 0, kNormalSpeedHz);
 }
 
 
@@ -216,7 +216,7 @@ double Adis16448::convertTemperature(const std::vector<byte> &word) {
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
-  std::vector<byte> res = spi_driver_.xfer(cmd, kNormalSpeedHz);
+  std::vector<byte> res = spi_driver_.xfer(cmd, kResponseSize, kNormalSpeedHz);
   return unsignedWordToInt(res);
 }
 
@@ -265,7 +265,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
 }
 
 ImuBurstResult Adis16448::burst() {
-  auto res = spi_driver_.xfer(CMD(GLOB_CMD), kBurstSpeedHz, burst_len_);
+  auto res = spi_driver_.xfer(CMD(GLOB_CMD), burst_len_, kBurstSpeedHz);
 
   if (burst_len_ == DEFAULT_BURST_LEN + 2 && !validateCrc(res)) {
     crc_error_count_++;
@@ -364,45 +364,4 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   data = crc;
   crc = (crc << 8) | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
   return crc;
-}
-
-std::vector<byte> Adis16448::customBurst() {
-
-  struct spi_ioc_transfer xfer[2];
-  xfer[0].speed_hz = kBurstSpeedHz;
-  xfer[1].speed_hz = kBurstSpeedHz;
-  unsigned char	buf[32];
-  int status;
-  if (!spi_driver_.isOpen()) {
-    LOG(E, "Error on burst read, spi driver is not open");
-    return {};
-  }
-  int fd = spi_driver_.getFd();
-
-  memset(xfer, 0, sizeof xfer);
-  memset(buf, 0, sizeof buf);
-
-  buf[0] = GLOB_CMD;
-  buf[1] = 0x00;
-  xfer[0].tx_buf = (unsigned long)buf;
-  xfer[0].len = 2;
-
-
-  xfer[1].rx_buf = (unsigned long) buf;
-  xfer[1].len = burst_len_;
-
-
-  status = ioctl(fd, SPI_IOC_MESSAGE(2), xfer);
-  if (status < 0) {
-    perror("SPI_IOC_MESSAGE");
-    return {};
-  }
-
-  std::vector<byte> res{};
-
-  for (int i = 0; i < burst_len_; i++) {
-    res.push_back(buf[i]);
-  }
-
-  return res;
 }
