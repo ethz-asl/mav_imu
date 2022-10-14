@@ -5,11 +5,11 @@
 #ifndef MAV_IMU_SRC_IMU_ADIS16448_H_
 #define MAV_IMU_SRC_IMU_ADIS16448_H_
 #include "imu_interface.h"
-#include <string>
 #include "spi_driver.h"
+#include <string>
 
 class Adis16448 : public ImuInterface {
- public:
+public:
   /**
    * Adis16448 Constructor
    * @param path to spidev e.g. /dev/spidev0.1
@@ -52,7 +52,8 @@ class Adis16448 : public ImuInterface {
   /**
    * Helper function to overwrite a registry entry.
    */
-  void writeReg(const uint8_t addr, const std::vector<byte>& data, const std::string& name);
+  void writeReg(const uint8_t addr, const std::vector<byte> &data,
+                const std::string &name);
 
   /**
    * Custom burst mode
@@ -68,9 +69,9 @@ class Adis16448 : public ImuInterface {
 
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
-  static bool validateCrc(const std::vector<byte>& burstData);
+  static bool validateCrc(const std::vector<byte> &burstData);
 
- private:
+private:
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
@@ -85,12 +86,12 @@ class Adis16448 : public ImuInterface {
    */
   void resetRegisters();
 
-  //!Convert spi output to measurement unit required by the ImuInterface
+  //! Convert spi output to measurement unit required by the ImuInterface
 
- /**
-  * @param gyro
-  * @return rad/s
-  */
+  /**
+   * @param gyro
+   * @return rad/s
+   */
   static vec3<double> convertGyro(vec3<double> gyro);
 
   /**
@@ -109,17 +110,17 @@ class Adis16448 : public ImuInterface {
    * @param word
    * @return
    */
-  static double convertBarometer(const std::vector<byte>& word);
+  static double convertBarometer(const std::vector<byte> &word);
 
   /**
    * @param word
    * @return
    */
-  static double convertTemperature(const std::vector<byte>& word);
+  static double convertTemperature(const std::vector<byte> &word);
 
   SpiDriver spi_driver_;
   int burst_len_{DEFAULT_BURST_LEN};
   int crc_error_count_{0};
 };
 
-#endif //MAV_IMU_SRC_IMU_ADIS16448_H_
+#endif // MAV_IMU_SRC_IMU_ADIS16448_H_

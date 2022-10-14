@@ -11,7 +11,7 @@
 typedef unsigned char byte;
 
 class SpiDriver {
- public:
+public:
   explicit SpiDriver(std::string path);
   bool open();
   [[nodiscard]] bool setMode(uint8_t mode) const;
@@ -22,7 +22,9 @@ class SpiDriver {
    * @param cmd vector with multiple bytes, response length, clock speed
    * @return vector with response or empty vector on failure
    */
-  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd, const int response_len, const uint32_t speed_hz) const;
+  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte> &cmd,
+                                       const int response_len,
+                                       const uint32_t speed_hz) const;
 
   /**
    * Spi duplex transaction
@@ -30,7 +32,9 @@ class SpiDriver {
    * @param cmds multiple commands with multiple bytes, clock speed
    * @return output of each command in command order
    */
-  [[nodiscard]] std::vector<std::vector<byte>> xfer2(const std::vector<std::vector<byte>>& cmds, const uint32_t speed_hz) const;
+  [[nodiscard]] std::vector<std::vector<byte>>
+  xfer2(const std::vector<std::vector<byte>> &cmds,
+        const uint32_t speed_hz) const;
 
   bool close();
 
@@ -40,10 +44,11 @@ class SpiDriver {
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
   [[nodiscard]] const std::string &getPath() const;
- private:
+
+private:
   bool is_open_{false};
   int fd_{};
   std::string path_;
 };
 
-#endif //MAV_IMU_SRC_SPI_DRIVER_H_
+#endif // MAV_IMU_SRC_SPI_DRIVER_H_
