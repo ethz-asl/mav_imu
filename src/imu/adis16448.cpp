@@ -58,10 +58,13 @@ bool Adis16448::init() {
   writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
 
   std::vector<byte> smpl_prd = {0x00, 0x01};
+// Factor 2 decimation to reduce update cycles (bad CRC).
+// TODO(rikba): Remove when DR handling is done.
+  smpl_prd[0] |= (0b00001 << 0); 
   writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
 
   std::vector<byte> sens_avg = {0x04, 0x02};
-  //sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
+  sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
 
   std::vector<byte> alm_ctrl = {0x00, 0x00};
