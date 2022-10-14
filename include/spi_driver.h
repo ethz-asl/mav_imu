@@ -19,7 +19,7 @@ class SpiDriver {
   /**
    * Spi half-duplex transaction
    *
-   * @param cmd vector with multiple bytes, defaults to 2 for compatibility reasons
+   * @param cmd vector with multiple bytes, response length, clock speed
    * @return vector with response or empty vector on failure
    */
   [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd, const int response_len, const uint32_t speed_hz) const;
@@ -27,10 +27,10 @@ class SpiDriver {
   /**
    * Spi duplex transaction
    *
-   * @param cmds multiple commands with multiple bytes
+   * @param cmds multiple commands with multiple bytes, clock speed
    * @return output of each command in command order
    */
-  [[nodiscard]] std::vector<std::vector<byte>> xfer2(const std::vector<std::vector<byte>>& cmds, const uint32_t speed_hz = 500000) const;
+  [[nodiscard]] std::vector<std::vector<byte>> xfer2(const std::vector<std::vector<byte>>& cmds, const uint32_t speed_hz) const;
 
   bool close();
 
