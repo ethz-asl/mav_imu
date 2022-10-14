@@ -6,6 +6,7 @@
 #define MAV_IMU_INCLUDE_IMU_INTERFACE_H_
 
 #include <sstream>
+#include <optional>
 #include "spi_driver.h"
 
 template<typename T>
@@ -41,18 +42,13 @@ inline vec3<T> operator*=(vec3<T>& t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 
-namespace IImu {
-inline static constexpr const int NaN = std::numeric_limits<int>::quiet_NaN();
-}
-using namespace IImu;
-
 class ImuBurstResult {
  public:
-  vec3<double> gyro = {NaN, NaN, NaN};
-  vec3<double> acceleration = {NaN, NaN, NaN};
-  vec3<double> magnetometer = {NaN, NaN, NaN};
-  double baro{NaN};
-  double temp{NaN};
+  std::optional<vec3<double>> gyro;
+  std::optional<vec3<double>> acceleration;
+  std::optional<vec3<double>> magnetometer;
+  std::optional<double> baro;
+  std::optional<double> temp;
 };
 
 class ImuInterface {
@@ -75,34 +71,34 @@ class ImuInterface {
    * Gets angular velocity from gyro.
    * @return angular velocity in rad/s
    */
-  virtual vec3<double> getGyro() = 0;
+  virtual std::optional<vec3<double>> getGyro() = 0;
 
   /**
    * Gets acceleration data vector
    *
    * @return acceleration in m/s² as double
    */
-  virtual vec3<double> getAcceleration() = 0;
+  virtual std::optional<vec3<double>> getAcceleration() = 0;
 
   //! magnetometer measurement
-  virtual vec3<double> getMagnetometer() {
-    return {NaN, NaN, NaN};
+  virtual std::optional<vec3<double>> getMagnetometer() {
+    return std::nullopt;
   };
 
   /**
    * Gets barometric pressure
    * @return QFE pressure in hPa
    */
-  virtual double getBarometer() {
-    return NaN;
+  virtual std::optional<double> getBarometer() {
+    return std::nullopt;
   };
 
   /**
    * Gets temperature
    * @return temperature in °C
    */
-  virtual double getTemperature() {
-    return NaN;
+  virtual std::optional<double> getTemperature() {
+    return std::nullopt;
   };
 
   /**

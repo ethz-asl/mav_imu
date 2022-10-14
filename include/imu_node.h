@@ -23,10 +23,10 @@ class ImuNode {
   inline static bool run_node = true;
 
  private:
-  sensor_msgs::Imu processImuData();
-  sensor_msgs::MagneticField processMagneticFieldData();
-  sensor_msgs::Temperature processTemperature();
-  sensor_msgs::FluidPressure processFluidpressure();
+  void processImuData();
+  void processMagneticFieldData();
+  void processTemperature();
+  void processFluidpressure();
 
   ros::Publisher imu_data_raw_pub_{};
   ros::Publisher imu_mag_pub_{};

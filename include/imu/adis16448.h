@@ -30,10 +30,10 @@ class Adis16448 : public ImuInterface {
 
   bool selftest() override;
   bool init() override;
-  vec3<double> getGyro() override;
-  vec3<double> getAcceleration() override;
-  vec3<double> getMagnetometer() override;
-  double getBarometer() override;
+  std::optional<vec3<double>> getGyro() override;
+  std::optional<vec3<double>> getAcceleration() override;
+  std::optional<vec3<double>> getMagnetometer() override;
+  std::optional<double> getBarometer() override;
 
   /**
    * Note that this temperature represents
@@ -41,7 +41,7 @@ class Adis16448 : public ImuInterface {
    * represent external conditions. The intended use of TEMP_OUT
    * is to monitor relative changes in temperature.
    */
-  double getTemperature() override;
+  std::optional<double> getTemperature() override;
   int getRaw(std::vector<byte> cmd) override;
 
   /**

@@ -149,7 +149,7 @@ bool Adis16448::close() {
   return spi_driver_.close();
 }
 
-vec3<double> Adis16448::getGyro() {
+std::optional<vec3<double>> Adis16448::getGyro() {
   // twos complement format, 25 LSB/°/sec, 0°/sec = 0x0000
   vec3<double> gyro{};
 
@@ -165,7 +165,7 @@ vec3<double> Adis16448::convertGyro(vec3<double> gyro) {
   return gyro * (M_PI / 180.); // Convert to rad/s and return
 }
 
-vec3<double> Adis16448::getAcceleration() {
+std::optional<vec3<double>> Adis16448::getAcceleration() {
   //twos complement format, 1200 LSB/g, 0 g = 0x0000
   vec3<double> acceleration{};
 
@@ -181,7 +181,7 @@ vec3<double> Adis16448::convertAcceleration(vec3<double> accel) {
   return accel * 9.80665;
 }
 
-vec3<double> Adis16448::getMagnetometer() {
+std::optional<vec3<double>> Adis16448::getMagnetometer() {
   //twos complement, 7 LSB/mgauss, 0x0000 = 0 mgauss
   vec3<double> magnetometer{};
 
@@ -198,7 +198,7 @@ vec3<double> Adis16448::convertMagnetometer(vec3<double> magnetometer) {
   return magnetometer;
 }
 
-double Adis16448::getBarometer() {
+std::optional<double> Adis16448::getBarometer() {
   //20 μbar per LSB, 0x0000 = 0 mbar
   int res = unsignedWordToInt(readReg(BARO_OUT));
   return res * 0.02;
@@ -208,7 +208,7 @@ double Adis16448::convertBarometer(const std::vector<byte> &word) {
   return unsignedWordToInt(word) * 0.02;
 }
 
-double Adis16448::getTemperature() {
+std::optional<double> Adis16448::getTemperature() {
   //Twos complement, 0.07386°C/LSB, 31°C = 0x0000, 12bit
   int a = signedWordToInt(readReg(TEMP_OUT));
   return 31 + (a * 0.07386);
