@@ -99,27 +99,23 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
     return {};
   }
 
+  // Create one transfer to send command and one to receive response.
   struct spi_ioc_transfer xfer[2];
-  unsigned char buf[32]{};
-
-  int len = (int) cmd.size();
   memset(xfer, 0, sizeof xfer);
-  memset(buf, 0, sizeof buf);
 
-  // Send a read command
-  for (int i = 0; i < cmd.size(); i++) {
-    buf[i] = cmd[i];
-    xfer[i].speed_hz = speed_hz;
-    xfer[i].bits_per_word = CHAR_BIT;
-  }
-
-  xfer[0].tx_buf = (unsigned long) buf;
+  // Configure transmit
+  xfer[0].tx_buf = (unsigned long) cmd.data();
   xfer[0].len = cmd.size();
+  xfer[0].speed_hz = speed_hz;
+  xfer[0].bits_per_word = CHAR_BIT;
 
-  unsigned char buf2[response_len];
-  memset(buf2, 0, sizeof buf2);
-  xfer[1].rx_buf = (unsigned long) buf2;
+  // Configure receive
+  std::vector<byte> res(response_len, 0);
+
+  xfer[1].rx_buf = (unsigned long) res.data();
   xfer[1].len = response_len;
+  xfer[1].speed_hz = speed_hz;
+  xfer[1].bits_per_word = CHAR_BIT;
 
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
@@ -127,11 +123,6 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd, const uint32_t s
     return {};
   }
 
-  std::vector<unsigned char> res(response_len);
-
-  for (int i = 0; i < response_len; i++) {
-    res[i] = buf2[i];
-  }
   return res;
 }
 
