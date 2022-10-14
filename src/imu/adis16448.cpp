@@ -14,6 +14,7 @@
 
 const uint32_t kNormalSpeedHz = 2000000;
 const uint32_t kBurstSpeedHz = 1000000;
+const uint32_t kResponseSize = 2;
 const uint32_t kWaitUs = 100e3;
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
@@ -60,7 +61,7 @@ bool Adis16448::init() {
   writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
 
   std::vector<byte> sens_avg = {0x04, 0x02};
-  sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
+  //sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
 
   std::vector<byte> alm_ctrl = {0x00, 0x00};
@@ -75,7 +76,7 @@ bool Adis16448::init() {
 }
 
 std::vector<byte> Adis16448::readReg(const uint8_t addr) {
-  return spi_driver_.xfer(CMD(addr), kNormalSpeedHz);
+  return spi_driver_.xfer(CMD(addr), kNormalSpeedHz, kResponseSize);
 }
 
 void Adis16448::writeReg(uint8_t addr, const std::vector<byte>& data, const std::string& name) {
@@ -101,7 +102,7 @@ bool Adis16448::selftest() {
 
   while (msc_ctrl[0] & (1 << 2)) {
     LOG(D, "Testing.");
-    usleep(kWaitUs); // Self test requires 45ms. Wait 100ms. 
+    usleep(kWaitUs); // Self test requires 45ms. Wait 100ms.
     msc_ctrl = readReg(MSC_CTRL);
   }
 
@@ -264,7 +265,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
 }
 
 ImuBurstResult Adis16448::burst() {
-  std::vector<byte> res = customBurst();
+  auto res = spi_driver_.xfer(CMD(GLOB_CMD), kBurstSpeedHz, burst_len_);
 
   if (burst_len_ == DEFAULT_BURST_LEN + 2 && !validateCrc(res)) {
     crc_error_count_++;
@@ -368,7 +369,8 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
 std::vector<byte> Adis16448::customBurst() {
 
   struct spi_ioc_transfer xfer[2];
-  xfer->speed_hz = kBurstSpeedHz;
+  xfer[0].speed_hz = kBurstSpeedHz;
+  xfer[1].speed_hz = kBurstSpeedHz;
   unsigned char	buf[32];
   int status;
   if (!spi_driver_.isOpen()) {
