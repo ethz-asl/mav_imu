@@ -275,7 +275,7 @@ ImuBurstResult Adis16448::burst() {
 
     //Since the adis is not synced with the host pc,
     //it is normal to have occasional checksum errors
-    if (crc_error_count_ >= 10) {
+    if (crc_error_count_ >= 5) {
       LOG_TIMED(E, 1, "DANGER: Last " << crc_error_count_ << " crc checks failed. Possible connection loss.");
     } else {
       LOG_EVERY(W, 1000, "Reported occasional checksum errors.");
