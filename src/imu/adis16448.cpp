@@ -48,6 +48,10 @@ bool Adis16448::init() {
   usleep(kWaitUs);
 
   // Calibration factory reset.
+  LOG(I, "Adis16448 factory calibration.");
+  writeReg(GLOB_CMD, {0x0, 1 << 1}, "GLOB_CMD");
+  usleep(kWaitUs);
+
 
   // TODO(rikba): Gyro auto-calibration.
 
