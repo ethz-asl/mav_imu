@@ -235,7 +235,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
-    usleep(1e3); // wait 1ms
+    usleep(kWaitUs); // wait 1ms
     auto res = readReg(MSC_CTRL);
 
     if (res[1] & (1 << 4)) {
@@ -251,7 +251,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
-    usleep(1e3); // wait 1ms
+    usleep(kWaitUs); // wait 1ms
     auto res = readReg(MSC_CTRL);
 
     if (!(res[1] & (1 << 4))) {
