@@ -47,7 +47,7 @@ void ImuNode::processImuData() {
       imu_burst_result_.gyro.has_value()) {
     sensor_msgs::Imu msg;
     msg.header.stamp = time_now_;
-    msg.header.frame_id = "map";
+    msg.header.frame_id = "imu";
 
     msg.linear_acceleration.x = imu_burst_result_.acceleration.value().x;
     msg.linear_acceleration.y = imu_burst_result_.acceleration.value().y;
