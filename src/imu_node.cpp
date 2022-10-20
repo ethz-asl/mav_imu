@@ -7,10 +7,11 @@
 
 ImuNode::ImuNode(ImuInterface &imu, int frequency)
     : imu_interface_(imu), frequency_(frequency) {
-  imu_data_raw_pub_ = nh_.advertise<sensor_msgs::Imu>("/imu/data_raw", 1);
-  imu_mag_pub_ = nh_.advertise<sensor_msgs::MagneticField>("/imu/mag", 1);
-  imu_temp_pub_ = nh_.advertise<sensor_msgs::Temperature>("/imu/temp", 1);
-  imu_baro_pub_ = nh_.advertise<sensor_msgs::FluidPressure>("/imu/pressure", 1);
+  ros::NodeHandle nh;
+  imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
+  imu_mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
+  imu_temp_pub_ = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
+  imu_baro_pub_ = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
 }
 
 bool ImuNode::init() {

@@ -34,7 +34,6 @@ private:
   ros::Publisher imu_baro_pub_;
 
   ImuInterface &imu_interface_;
-  ros::NodeHandle nh_{};
   int frequency_{};
 
   ros::Time time_now_{};
