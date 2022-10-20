@@ -11,6 +11,4 @@
     <param name="frequency" value="$(arg frequency)" type="int"/>
 </node>
 
-<node name="imu_filter_madgwick" pkg="imu_filter_madgwick" type="imu_filter_node" launch-prefix="$(arg launch-prefix)" output="$(arg output)"/>
-
 </launch>
