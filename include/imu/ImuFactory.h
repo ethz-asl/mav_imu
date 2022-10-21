@@ -5,12 +5,12 @@
 #ifndef MAV_IMU_SRC_IMU_IMUFACTORY_H_
 #define MAV_IMU_SRC_IMU_IMUFACTORY_H_
 
-#include <memory>
 #include "imu_interface.h"
+#include <memory>
 
 class ImuFactory {
  public:
-  static ImuInterface* createImuByName(const std::string &imu_name, const std::string &spi_path);
+  static ImuInterface *createImuByName(const std::string &imu_name, const std::string &spi_path);
 };
 
 #endif //MAV_IMU_SRC_IMU_IMUFACTORY_H_

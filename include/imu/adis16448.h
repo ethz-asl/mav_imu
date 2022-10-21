@@ -5,8 +5,8 @@
 #ifndef MAV_IMU_SRC_IMU_ADIS16448_H_
 #define MAV_IMU_SRC_IMU_ADIS16448_H_
 #include "imu_interface.h"
-#include <string>
 #include "spi_driver.h"
+#include <string>
 
 class Adis16448 : public ImuInterface {
  public:
@@ -17,6 +17,11 @@ class Adis16448 : public ImuInterface {
   explicit Adis16448(const std::string &path);
 
   /**
+   * Adis16448 Destructor
+   */
+  ~Adis16448();
+
+  /**
    * Enable crc checksum check on burst read
    * @param b
    * @return true if successful, otherwise false
@@ -25,10 +30,10 @@ class Adis16448 : public ImuInterface {
 
   bool selftest() override;
   bool init() override;
-  vec3<double> getGyro() override;
-  vec3<double> getAcceleration() override;
-  vec3<double> getMagnetometer() override;
-  double getBarometer() override;
+  std::optional<vec3<double>> getGyro() override;
+  std::optional<vec3<double>> getAcceleration() override;
+  std::optional<vec3<double>> getMagnetometer() override;
+  std::optional<double> getBarometer() override;
 
   /**
    * Note that this temperature represents
@@ -36,7 +41,7 @@ class Adis16448 : public ImuInterface {
    * represent external conditions. The intended use of TEMP_OUT
    * is to monitor relative changes in temperature.
    */
-  double getTemperature() override;
+  std::optional<double> getTemperature() override;
   int getRaw(std::vector<byte> cmd) override;
 
   /**
@@ -53,30 +58,34 @@ class Adis16448 : public ImuInterface {
 
   static int signedWordToInt(const std::vector<byte> &word);
   static int unsignedWordToInt(const std::vector<byte> &word);
-  static bool validateCrc(const std::vector<byte>& burstData);
+  static bool validateCrc(const std::vector<byte> &burstData);
 
  private:
-  /**
-   * Adis16448 specific burst function.
-   * @return burst read on success, otherwise empty vector
-   */
-  std::vector<byte> customBurst();
-
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
   /**
-   * Set all registers that are stored in flash backup to default values
-   * @return
+   * Helper function to read a registry entry.
    */
-  void resetRegisters();
+  std::vector<byte> readReg(uint8_t addr);
 
-  //!Convert spi output to measurement unit required by the ImuInterface
+  /**
+   * Helper function to overwrite a registry entry.
+   */
+  void writeReg(uint8_t addr, const std::vector<byte> &data,
+                const std::string &name);
 
- /**
-  * @param gyro
-  * @return rad/s
-  */
+  /**
+   * Run a test read sequence for SPI communcation.
+   */
+  bool testSPI();
+
+  //! Convert spi output to measurement unit required by the ImuInterface
+
+  /**
+   * @param gyro
+   * @return rad/s
+   */
   static vec3<double> convertGyro(vec3<double> gyro);
 
   /**
@@ -95,17 +104,22 @@ class Adis16448 : public ImuInterface {
    * @param word
    * @return
    */
-  static double convertBarometer(const std::vector<byte>& word);
+  static double convertBarometer(const std::vector<byte> &word);
 
   /**
    * @param word
    * @return
    */
-  static double convertTemperature(const std::vector<byte>& word);
+  static double convertTemperature(const std::vector<byte> &word);
 
   SpiDriver spi_driver_;
   int burst_len_{DEFAULT_BURST_LEN};
   int crc_error_count_{0};
+
+  inline static const constexpr uint32_t spi_transfer_speed_hz_ = 2000000;
+  inline static const constexpr uint32_t spi_burst_speed_hz_    = 1000000;
+  inline static const constexpr uint32_t spi_response_size_     = 2;
+  inline static const constexpr uint32_t ms_                    = 100e3;
 };
 
-#endif //MAV_IMU_SRC_IMU_ADIS16448_H_
+#endif // MAV_IMU_SRC_IMU_ADIS16448_H_

@@ -19,18 +19,25 @@ class SpiDriver {
   /**
    * Spi half-duplex transaction
    *
-   * @param cmd vector with multiple bytes, defaults to 2 for compatibility reasons
+   * @param cmd vector with multiple bytes
+   * @param response_len response length
+   * @param speed_hz SPI transfer clock speed
    * @return vector with response or empty vector on failure
    */
-  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte>& cmd, int response_len = 2) const;
+  [[nodiscard]] std::vector<byte> xfer(const std::vector<byte> &cmd,
+                                       const int response_len,
+                                       const uint32_t speed_hz) const;
 
   /**
    * Spi duplex transaction
    *
    * @param cmds multiple commands with multiple bytes
+   * @param speed_hz SPI clock speed
    * @return output of each command in command order
    */
-  [[nodiscard]] std::vector<std::vector<byte>> xfer2(const std::vector<std::vector<byte>>& cmds) const;
+  [[nodiscard]] std::vector<std::vector<byte>>
+  xfer2(const std::vector<std::vector<byte>> &cmds,
+        const uint32_t speed_hz) const;
 
   bool close();
 
@@ -40,10 +47,11 @@ class SpiDriver {
   [[nodiscard]] bool isOpen() const;
   [[nodiscard]] int getFd() const;
   [[nodiscard]] const std::string &getPath() const;
+
  private:
   bool is_open_{false};
   int fd_{};
   std::string path_;
 };
 
-#endif //MAV_IMU_SRC_SPI_DRIVER_H_
+#endif // MAV_IMU_SRC_SPI_DRIVER_H_

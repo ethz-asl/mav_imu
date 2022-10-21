@@ -5,8 +5,9 @@
 #ifndef MAV_IMU_INCLUDE_IMU_INTERFACE_H_
 #define MAV_IMU_INCLUDE_IMU_INTERFACE_H_
 
-#include <sstream>
 #include "spi_driver.h"
+#include <optional>
+#include <sstream>
 
 template<typename T>
 struct vec3 {
@@ -27,7 +28,7 @@ inline vec3<T> operator/(const vec3<T> t, T num) {
 }
 
 template<typename T>
-inline vec3<T> operator/=(vec3<T>& t, T num) {
+inline vec3<T> operator/=(vec3<T> &t, T num) {
   return {t.x /= num, t.y /= num, t.z /= num};
 }
 
@@ -37,27 +38,21 @@ inline vec3<T> operator*(const vec3<T> t, T num) {
 }
 
 template<typename T>
-inline vec3<T> operator*=(vec3<T>& t, T num) {
+inline vec3<T> operator*=(vec3<T> &t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 
-namespace IImu {
-inline static constexpr const int NaN = std::numeric_limits<int>::quiet_NaN();
-}
-using namespace IImu;
-
 class ImuBurstResult {
  public:
-  vec3<double> gyro = {NaN, NaN, NaN};
-  vec3<double> acceleration = {NaN, NaN, NaN};
-  vec3<double> magnetometer = {NaN, NaN, NaN};
-  double baro{NaN};
-  double temp{NaN};
+  std::optional<vec3<double>> gyro;
+  std::optional<vec3<double>> acceleration;
+  std::optional<vec3<double>> magnetometer;
+  std::optional<double> baro;
+  std::optional<double> temp;
 };
 
 class ImuInterface {
  public:
-
   virtual bool init() = 0;
   /**
    * Imu health check.
@@ -75,35 +70,31 @@ class ImuInterface {
    * Gets angular velocity from gyro.
    * @return angular velocity in rad/s
    */
-  virtual vec3<double> getGyro() = 0;
+  virtual std::optional<vec3<double>> getGyro() = 0;
 
   /**
    * Gets acceleration data vector
    *
    * @return acceleration in m/s² as double
    */
-  virtual vec3<double> getAcceleration() = 0;
+  virtual std::optional<vec3<double>> getAcceleration() = 0;
 
   //! magnetometer measurement
-  virtual vec3<double> getMagnetometer() {
-    return {NaN, NaN, NaN};
+  virtual std::optional<vec3<double>> getMagnetometer() {
+    return std::nullopt;
   };
 
   /**
    * Gets barometric pressure
    * @return QFE pressure in hPa
    */
-  virtual double getBarometer() {
-    return NaN;
-  };
+  virtual std::optional<double> getBarometer() { return std::nullopt; };
 
   /**
    * Gets temperature
    * @return temperature in °C
    */
-  virtual double getTemperature() {
-    return NaN;
-  };
+  virtual std::optional<double> getTemperature() { return std::nullopt; };
 
   /**
    * Generic function to read spi register
@@ -114,20 +105,20 @@ class ImuInterface {
 
   /**
    * Reads all sensor data at once
-   * @return struct with sensor data. Returns NaN if hardware does not support specific sensor.
+   * @return struct with sensor data. Returns std::nullopt if hardware does not support specific sensor field.
    */
   virtual ImuBurstResult burst() {
     ImuBurstResult res{};
-    res.gyro = getGyro();
+    res.gyro         = getGyro();
     res.acceleration = getAcceleration();
     res.magnetometer = getMagnetometer();
-    res.baro = getBarometer();
-    res.temp = getTemperature();
+    res.baro         = getBarometer();
+    res.temp         = getTemperature();
 
     return res;
   }
 
-  //virtual int getSerialnumber();
+  // virtual int getSerialnumber();
 };
 
-#endif //MAV_IMU_INCLUDE_IMU_INTERFACE_H_
+#endif // MAV_IMU_INCLUDE_IMU_INTERFACE_H_
