@@ -11,7 +11,7 @@
 typedef unsigned char byte;
 
 class SpiDriver {
-public:
+ public:
   explicit SpiDriver(std::string path);
   bool open();
   [[nodiscard]] bool setMode(uint8_t mode) const;
@@ -48,7 +48,7 @@ public:
   [[nodiscard]] int getFd() const;
   [[nodiscard]] const std::string &getPath() const;
 
-private:
+ private:
   bool is_open_{false};
   int fd_{};
   std::string path_;

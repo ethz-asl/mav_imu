@@ -44,7 +44,7 @@ SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds,
     std::vector<byte> cmd{};
     if (i < cmds.size()) {
       const std::vector<byte> &a = cmds.at(i);
-      cmd = a;
+      cmd                        = a;
     } else {
       cmd = {0x00, 0x00};
     }
@@ -67,13 +67,13 @@ SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds,
     buf[0] = cmd[0];
     buf[1] = cmd[1];
 
-    xfer[0].tx_buf = (unsigned long)buf;
-    xfer[0].len = len;
+    xfer[0].tx_buf = (unsigned long) buf;
+    xfer[0].len    = len;
 
     unsigned char buf2[len];
     memset(buf2, 0, sizeof buf2);
-    xfer[0].rx_buf = (unsigned long)buf2;
-    xfer[0].len = len;
+    xfer[0].rx_buf = (unsigned long) buf2;
+    xfer[0].len    = len;
 
     int status = ioctl(fd_, SPI_IOC_MESSAGE(1), xfer);
     if (status < 0) {
@@ -103,17 +103,17 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
   memset(xfer, 0, sizeof xfer);
 
   // Configure transmit
-  xfer[0].tx_buf = (unsigned long)cmd.data();
-  xfer[0].len = cmd.size();
-  xfer[0].speed_hz = speed_hz;
+  xfer[0].tx_buf        = (unsigned long) cmd.data();
+  xfer[0].len           = cmd.size();
+  xfer[0].speed_hz      = speed_hz;
   xfer[0].bits_per_word = CHAR_BIT;
 
   // Configure receive
   std::vector<byte> res(response_len, 0);
 
-  xfer[1].rx_buf = (unsigned long)res.data();
-  xfer[1].len = response_len;
-  xfer[1].speed_hz = speed_hz;
+  xfer[1].rx_buf        = (unsigned long) res.data();
+  xfer[1].len           = response_len;
+  xfer[1].speed_hz      = speed_hz;
   xfer[1].bits_per_word = CHAR_BIT;
 
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);

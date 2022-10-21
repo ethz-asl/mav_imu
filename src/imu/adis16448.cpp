@@ -47,7 +47,6 @@ bool Adis16448::init() {
   writeReg(GLOB_CMD, {0x0, 1 << 1}, "GLOB_CMD");
   usleep(ms_);
 
-
   // TODO(rikba): Gyro auto-calibration.
 
   // General configuration.
@@ -83,8 +82,7 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
                          const std::string &name) {
   // TODO(rikba): I don't know how to do hex formatting with lpp. Replace comma
   // with two digit hex
-  LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0]
-                  << ", 0x" << +data[1]);
+  LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
@@ -99,7 +97,7 @@ bool Adis16448::selftest() {
   // Start self test.
   LOG(I, "Adis16448 self-test.");
   auto msc_ctrl = readReg(MSC_CTRL);
-  msc_ctrl[0] = (1 << 2) | msc_ctrl[0]; // Set bit 10 (3rd high bit).
+  msc_ctrl[0]   = (1 << 2) | msc_ctrl[0]; // Set bit 10 (3rd high bit).
   writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
 
   while (msc_ctrl[0] & (1 << 2)) {
@@ -225,13 +223,13 @@ int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
 }
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
-  return (((int)*(signed char *)(word.data())) * 1 << CHAR_BIT) | word[1];
+  return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
 }
 
 bool Adis16448::setBurstCRCEnabled(bool b) {
   if (b) {
     auto msc_ctrl = readReg(MSC_CTRL);
-    msc_ctrl[1] = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
+    msc_ctrl[1]   = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
     usleep(ms_); // wait 1ms
     auto res = readReg(MSC_CTRL);
@@ -247,7 +245,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     return false;
   } else {
     auto msc_ctrl = readReg(MSC_CTRL);
-    msc_ctrl[1] = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
+    msc_ctrl[1]   = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
     usleep(ms_); // wait 1ms
     auto res = readReg(MSC_CTRL);
@@ -260,7 +258,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     }
 
     LOG(E,
-        "Error on burst mode disable: " << (int)res[0] << ", " << (int)res[1]);
+        "Error on burst mode disable: " << (int) res[0] << ", " << (int) res[1]);
     return false;
   }
 }
@@ -291,9 +289,9 @@ ImuBurstResult Adis16448::burst() {
   gyro_raw.z = signedWordToInt({res[6], res[7]});
 
   vec3<double> raw_accel{};
-  raw_accel.x = (double)signedWordToInt({res[8], res[9]});
-  raw_accel.y = (double)signedWordToInt({res[10], res[11]});
-  raw_accel.z = (double)signedWordToInt({res[12], res[13]});
+  raw_accel.x = (double) signedWordToInt({res[8], res[9]});
+  raw_accel.y = (double) signedWordToInt({res[10], res[11]});
+  raw_accel.z = (double) signedWordToInt({res[12], res[13]});
 
   vec3<double> raw_magn{};
   raw_magn.x = signedWordToInt({res[14], res[15]});
@@ -301,7 +299,7 @@ ImuBurstResult Adis16448::burst() {
   raw_magn.z = signedWordToInt({res[18], res[19]});
 
   struct ImuBurstResult ret {};
-  ret.gyro = convertGyro(gyro_raw);
+  ret.gyro         = convertGyro(gyro_raw);
   ret.acceleration = convertAcceleration(raw_accel);
   ret.magnetometer = convertMagnetometer(raw_magn);
 
@@ -323,7 +321,7 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
   int count = 0;
 
   for (int i = 0; i < 24; i += 2) {
-    uint16_t a = (uint16_t)Adis16448::unsignedWordToInt(
+    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt(
         {burstData[i], burstData[i + 1]});
     sampleAsWord[count] = a;
     count++;
@@ -343,14 +341,14 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   unsigned int upperByte; // Upper Byte of burstData word
   unsigned int POLY;      // Divisor used during CRC computation
   POLY = 0x1021;          // Define divisor
-  crc = 0xFFFF; // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
+  crc  = 0xFFFF;          // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
   // Compute CRC on burst data starting from XGYRO_OUT and ending with TEMP_OUT.
   // Start with the lower byte and then the upper byte of each word.
   // i.e. Compute XGYRO_OUT_LSB CRC first and then compute XGYRO_OUT_MSB CRC.
   for (i = 1; i < 12; i++) {
     upperByte = (burstData[i] >> 8) & 0xFF;
     lowerByte = (burstData[i] & 0xFF);
-    data = lowerByte; // Compute lower byte CRC first
+    data      = lowerByte; // Compute lower byte CRC first
     for (ii = 0; ii < 8; ii++, data >>= 1) {
       if ((crc & 0x0001) ^ (data & 0x0001))
         crc = (crc >> 1) ^ POLY;
@@ -365,9 +363,8 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
         crc >>= 1;
     }
   }
-  crc = ~crc; // Compute complement of CRC\par
+  crc  = ~crc; // Compute complement of CRC\par
   data = crc;
-  crc = (crc << 8) |
-        (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
+  crc  = (crc << 8) | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
   return crc;
 }

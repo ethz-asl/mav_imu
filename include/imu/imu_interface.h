@@ -9,7 +9,8 @@
 #include <optional>
 #include <sstream>
 
-template <typename T> struct vec3 {
+template<typename T>
+struct vec3 {
   T x;
   T y;
   T z;
@@ -21,24 +22,28 @@ template <typename T> struct vec3 {
   }
 };
 
-template <typename T> inline vec3<T> operator/(const vec3<T> t, T num) {
+template<typename T>
+inline vec3<T> operator/(const vec3<T> t, T num) {
   return {t.x / num, t.y / num, t.z / num};
 }
 
-template <typename T> inline vec3<T> operator/=(vec3<T> &t, T num) {
+template<typename T>
+inline vec3<T> operator/=(vec3<T> &t, T num) {
   return {t.x /= num, t.y /= num, t.z /= num};
 }
 
-template <typename T> inline vec3<T> operator*(const vec3<T> t, T num) {
+template<typename T>
+inline vec3<T> operator*(const vec3<T> t, T num) {
   return {t.x * num, t.y * num, t.z * num};
 }
 
-template <typename T> inline vec3<T> operator*=(vec3<T> &t, T num) {
+template<typename T>
+inline vec3<T> operator*=(vec3<T> &t, T num) {
   return {t.x *= num, t.y *= num, t.z *= num};
 }
 
 class ImuBurstResult {
-public:
+ public:
   std::optional<vec3<double>> gyro;
   std::optional<vec3<double>> acceleration;
   std::optional<vec3<double>> magnetometer;
@@ -47,7 +52,7 @@ public:
 };
 
 class ImuInterface {
-public:
+ public:
   virtual bool init() = 0;
   /**
    * Imu health check.
@@ -104,11 +109,11 @@ public:
    */
   virtual ImuBurstResult burst() {
     ImuBurstResult res{};
-    res.gyro = getGyro();
+    res.gyro         = getGyro();
     res.acceleration = getAcceleration();
     res.magnetometer = getMagnetometer();
-    res.baro = getBarometer();
-    res.temp = getTemperature();
+    res.baro         = getBarometer();
+    res.temp         = getTemperature();
 
     return res;
   }

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh_private("~");
   std::string spi_path =
       nh_private.param("spi_path", std::string("/dev/spidev0.1"));
-  int frequency = nh_private.param("frequency", 200);
+  int frequency        = nh_private.param("frequency", 200);
   std::string imu_name = nh_private.param("imu", std::string("adis16448"));
 
   LOG(I, "Spi path: " << spi_path);

@@ -15,14 +15,14 @@
 #include <string>
 
 class ImuNode {
-public:
+ public:
   ImuNode(ImuInterface &imu_interface, int frequency);
   bool init();
   int run();
 
   inline static bool run_node = true;
 
-private:
+ private:
   void processImuData();
   void processMagneticFieldData();
   void processTemperature();

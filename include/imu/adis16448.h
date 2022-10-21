@@ -9,7 +9,7 @@
 #include <string>
 
 class Adis16448 : public ImuInterface {
-public:
+ public:
   /**
    * Adis16448 Constructor
    * @param path to spidev e.g. /dev/spidev0.1
@@ -60,7 +60,7 @@ public:
   static int unsignedWordToInt(const std::vector<byte> &word);
   static bool validateCrc(const std::vector<byte> &burstData);
 
-private:
+ private:
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
@@ -117,9 +117,9 @@ private:
   int crc_error_count_{0};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 2000000;
-  inline static const constexpr uint32_t spi_burst_speed_hz_ = 1000000;
-  inline static const constexpr uint32_t spi_response_size_ = 2;
-  inline static const constexpr uint32_t ms_ = 100e3;
+  inline static const constexpr uint32_t spi_burst_speed_hz_    = 1000000;
+  inline static const constexpr uint32_t spi_response_size_     = 2;
+  inline static const constexpr uint32_t ms_                    = 100e3;
 };
 
 #endif // MAV_IMU_SRC_IMU_ADIS16448_H_

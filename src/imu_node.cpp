@@ -9,9 +9,9 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency)
     : imu_interface_(imu), frequency_(frequency) {
   ros::NodeHandle nh;
   imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
-  imu_mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
-  imu_temp_pub_ = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
-  imu_baro_pub_ = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
+  imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
+  imu_temp_pub_     = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
+  imu_baro_pub_     = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
 }
 
 bool ImuNode::init() {
@@ -27,7 +27,7 @@ int ImuNode::run() {
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(frequency_);
 
-    time_now_ = ros::Time::now();
+    time_now_         = ros::Time::now();
     imu_burst_result_ = imu_interface_.burst();
 
     processImuData();
@@ -43,10 +43,9 @@ int ImuNode::run() {
 }
 
 void ImuNode::processImuData() {
-  if (imu_burst_result_.acceleration.has_value() &&
-      imu_burst_result_.gyro.has_value()) {
+  if (imu_burst_result_.acceleration.has_value() && imu_burst_result_.gyro.has_value()) {
     sensor_msgs::Imu msg;
-    msg.header.stamp = time_now_;
+    msg.header.stamp    = time_now_;
     msg.header.frame_id = "imu";
 
     msg.linear_acceleration.x = imu_burst_result_.acceleration.value().x;
@@ -80,8 +79,8 @@ void ImuNode::processTemperature() {
 
     sensor_msgs::Temperature temp_msg;
     temp_msg.header.stamp = time_now_;
-    temp_msg.temperature = imu_burst_result_.temp.value();
-    temp_msg.variance = 0;
+    temp_msg.temperature  = imu_burst_result_.temp.value();
+    temp_msg.variance     = 0;
     imu_temp_pub_.publish(temp_msg);
   }
 }
@@ -93,7 +92,7 @@ void ImuNode::processFluidpressure() {
     pressure_msg.header.stamp = time_now_;
     // Ros takes fluid pressure in Pa. Convert hPa to Pa.
     pressure_msg.fluid_pressure = imu_burst_result_.baro.value() * 100;
-    pressure_msg.variance = 0;
+    pressure_msg.variance       = 0;
 
     imu_baro_pub_.publish(pressure_msg);
   }
