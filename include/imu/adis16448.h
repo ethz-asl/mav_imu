@@ -80,12 +80,6 @@ private:
    */
   bool testSPI();
 
-  /**
-   * Set all registers that are stored in flash backup to default values
-   * @return
-   */
-  void resetRegisters();
-
   //! Convert spi output to measurement unit required by the ImuInterface
 
   /**
