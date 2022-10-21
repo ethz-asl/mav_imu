@@ -19,7 +19,9 @@ public:
   /**
    * Spi half-duplex transaction
    *
-   * @param cmd vector with multiple bytes, response length, clock speed
+   * @param cmd vector with multiple bytes
+   * @param response_len response length
+   * @param speed_hz SPI transfer clock speed
    * @return vector with response or empty vector on failure
    */
   [[nodiscard]] std::vector<byte> xfer(const std::vector<byte> &cmd,
