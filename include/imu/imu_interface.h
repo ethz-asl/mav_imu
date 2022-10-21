@@ -100,8 +100,7 @@ public:
 
   /**
    * Reads all sensor data at once
-   * @return struct with sensor data. Returns NaN if hardware does not support
-   * specific sensor.
+   * @return struct with sensor data. Returns std::nullopt if hardware does not support specific sensor field.
    */
   virtual ImuBurstResult burst() {
     ImuBurstResult res{};
