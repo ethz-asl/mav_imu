@@ -11,11 +11,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-const uint32_t kNormalSpeedHz = 2000000;
-const uint32_t kBurstSpeedHz = 1000000;
-const uint32_t kResponseSize = 2;
-const uint32_t kWaitUs = 100e3;
-
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
 Adis16448::~Adis16448() {
@@ -45,12 +40,12 @@ bool Adis16448::init() {
   // Software reset.
   LOG(I, "Adis16448 software reset.");
   writeReg(GLOB_CMD, {0x0, 1 << 7}, "GLOB_CMD");
-  usleep(kWaitUs);
+  usleep(ms_);
 
   // Calibration factory reset.
   LOG(I, "Adis16448 factory calibration.");
   writeReg(GLOB_CMD, {0x0, 1 << 1}, "GLOB_CMD");
-  usleep(kWaitUs);
+  usleep(ms_);
 
 
   // TODO(rikba): Gyro auto-calibration.
@@ -81,7 +76,7 @@ bool Adis16448::init() {
 }
 
 std::vector<byte> Adis16448::readReg(const uint8_t addr) {
-  return spi_driver_.xfer(CMD(addr), kResponseSize, kNormalSpeedHz);
+  return spi_driver_.xfer(CMD(addr), spi_response_size_, spi_transfer_speed_hz_);
 }
 
 void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
@@ -93,11 +88,11 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
-  spi_driver_.xfer({addr, data[1]}, 0, kNormalSpeedHz);
+  spi_driver_.xfer({addr, data[1]}, 0, spi_transfer_speed_hz_);
   // Increment address.
   addr = (addr | 0x1);
   // Send high word.
-  spi_driver_.xfer({addr, data[0]}, 0, kNormalSpeedHz);
+  spi_driver_.xfer({addr, data[0]}, 0, spi_transfer_speed_hz_);
 }
 
 bool Adis16448::selftest() {
@@ -109,7 +104,7 @@ bool Adis16448::selftest() {
 
   while (msc_ctrl[0] & (1 << 2)) {
     LOG(D, "Testing.");
-    usleep(kWaitUs); // Self test requires 45ms. Wait 100ms.
+    usleep(ms_); // Self test requires 45ms. Wait 100ms.
     msc_ctrl = readReg(MSC_CTRL);
   }
 
@@ -221,7 +216,7 @@ double Adis16448::convertTemperature(const std::vector<byte> &word) {
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
-  std::vector<byte> res = spi_driver_.xfer(cmd, kResponseSize, kNormalSpeedHz);
+  std::vector<byte> res = spi_driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
   return unsignedWordToInt(res);
 }
 
@@ -238,7 +233,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (1 << 4) | msc_ctrl[1]; // Set lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
-    usleep(kWaitUs); // wait 1ms
+    usleep(ms_); // wait 1ms
     auto res = readReg(MSC_CTRL);
 
     if (res[1] & (1 << 4)) {
@@ -254,7 +249,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     auto msc_ctrl = readReg(MSC_CTRL);
     msc_ctrl[1] = (~(1 << 4)) & msc_ctrl[1]; // Clear lower bit 4.
     writeReg(MSC_CTRL, msc_ctrl, "MSC_CTRL");
-    usleep(kWaitUs); // wait 1ms
+    usleep(ms_); // wait 1ms
     auto res = readReg(MSC_CTRL);
 
     if (!(res[1] & (1 << 4))) {
@@ -271,7 +266,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
 }
 
 ImuBurstResult Adis16448::burst() {
-  auto res = spi_driver_.xfer(CMD(GLOB_CMD), burst_len_, kBurstSpeedHz);
+  auto res = spi_driver_.xfer(CMD(GLOB_CMD), burst_len_, spi_burst_speed_hz_);
 
   if (burst_len_ == DEFAULT_BURST_LEN + 2 && !validateCrc(res)) {
     crc_error_count_++;
