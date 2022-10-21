@@ -29,7 +29,8 @@ public:
   /**
    * Spi duplex transaction
    *
-   * @param cmds multiple commands with multiple bytes, clock speed
+   * @param cmds multiple commands with multiple bytes
+   * @param speed_hz SPI clock speed
    * @return output of each command in command order
    */
   [[nodiscard]] std::vector<std::vector<byte>>
