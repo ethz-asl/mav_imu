@@ -70,8 +70,7 @@ bool Adis16448::init() {
   sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
 
-  std::vector<byte> alm_ctrl = {0x00, 0x00};
-  writeReg(ALM_CTRL, alm_ctrl, "ALM_CTRL");
+  writeReg(ALM_CTRL, {0x00, 0x00}, "ALM_CTRL");
 
   std::vector<byte> gpio_ctrl = {0x00, 0x00};
   gpio_ctrl[0] &= ~(1 << 1); // Clear DIO2 to light LED.
