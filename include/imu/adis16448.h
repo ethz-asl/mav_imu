@@ -45,17 +45,6 @@ public:
   int getRaw(std::vector<byte> cmd) override;
 
   /**
-   * Helper function to read a registry entry.
-   */
-  std::vector<byte> readReg(const uint8_t addr);
-
-  /**
-   * Helper function to overwrite a registry entry.
-   */
-  void writeReg(const uint8_t addr, const std::vector<byte> &data,
-                const std::string &name);
-
-  /**
    * Custom burst mode
    * @return struct with all values.
    */
@@ -74,6 +63,17 @@ public:
 private:
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
+
+  /**
+   * Helper function to read a registry entry.
+   */
+  std::vector<byte> readReg(uint8_t addr);
+
+  /**
+   * Helper function to overwrite a registry entry.
+   */
+  void writeReg(uint8_t addr, const std::vector<byte> &data,
+                const std::string &name);
 
   /**
    * Run a test read sequence for SPI communcation.
