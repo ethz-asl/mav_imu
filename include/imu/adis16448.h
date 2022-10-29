@@ -4,9 +4,10 @@
 
 #ifndef MAV_IMU_SRC_IMU_ADIS16448_H_
 #define MAV_IMU_SRC_IMU_ADIS16448_H_
+#include <string>
+
 #include "imu_interface.h"
 #include "spi_driver.h"
-#include <string>
 
 class Adis16448 : public ImuInterface {
  public:
@@ -50,6 +51,7 @@ class Adis16448 : public ImuInterface {
    */
   ImuBurstResult burst() override;
 
+  bool calibrateGyro() override;
   /**
    * Free file descriptor
    * @return true if successful, otherwise false and errno is set.
@@ -76,7 +78,7 @@ class Adis16448 : public ImuInterface {
                 const std::string &name);
 
   /**
-   * Run a test read sequence for SPI communcation.
+   * Run a test read sequence for SPI communication.
    */
   bool testSPI();
 
