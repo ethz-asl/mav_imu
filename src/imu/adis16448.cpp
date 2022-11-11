@@ -60,8 +60,8 @@ bool Adis16448::init() {
   smpl_prd[0] |= (0b00001 << 0);
   writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
 
-  std::vector<byte> sens_avg = {0x04, 0x02};
-  sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
+  std::vector<byte> sens_avg = {0x04, 0x04};
+  //sens_avg[1] &= ~(0b111 << 0); // Clear digital filter.
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
 
   writeReg(ALM_CTRL, {0x00, 0x00}, "ALM_CTRL");
