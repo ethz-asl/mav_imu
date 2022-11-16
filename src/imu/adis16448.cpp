@@ -38,9 +38,7 @@ bool Adis16448::init() {
   }
 
   // Software reset.
-  LOG(I, "Adis16448 software reset.");
-  writeReg(GLOB_CMD, {0x0, 1 << 7}, "GLOB_CMD");
-  usleep(ms_);
+  softwareReset();
 
   // Calibration factory reset.
   LOG(I, "Adis16448 factory calibration.");
@@ -142,7 +140,16 @@ bool Adis16448::testSPI() {
   return res[0] == 0x40 && res[1] == 0x40;
 }
 
-bool Adis16448::close() { return spi_driver_.close(); }
+void Adis16448::softwareReset() {
+  LOG(I, "Adis16448 software reset.");
+  writeReg(GLOB_CMD, {0x0, 1 << 7}, "GLOB_CMD");
+  usleep(ms_);
+}
+
+bool Adis16448::close() {
+  softwareReset();
+  return spi_driver_.close();
+}
 
 std::optional<vec3<double>> Adis16448::getGyro() {
   // twos complement format, 25 LSB/°/sec, 0°/sec = 0x0000

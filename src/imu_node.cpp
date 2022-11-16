@@ -39,6 +39,7 @@ int ImuNode::run() {
     ros::spinOnce();
     loop_rate.sleep();
   }
+  imu_interface_.close();
   return 0;
 }
 

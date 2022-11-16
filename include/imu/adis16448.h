@@ -112,6 +112,12 @@ class Adis16448 : public ImuInterface {
    */
   static double convertTemperature(const std::vector<byte> &word);
 
+
+  /**
+   * Resets the Imu and turns the LED off.
+   */
+  void softwareReset();
+
   SpiDriver spi_driver_;
   int burst_len_{DEFAULT_BURST_LEN};
   int crc_error_count_{0};
