@@ -44,11 +44,11 @@ inline vec3<T> operator*=(vec3<T> &t, T num) {
 
 class ImuBurstResult {
  public:
-  std::optional<vec3<double>> gyro;
-  std::optional<vec3<double>> acceleration;
-  std::optional<vec3<double>> magnetometer;
-  std::optional<double> baro;
-  std::optional<double> temp;
+  std::optional<vec3<double>> gyro{std::nullopt};
+  std::optional<vec3<double>> acceleration{std::nullopt};
+  std::optional<vec3<double>> magnetometer{std::nullopt};
+  std::optional<double> baro{std::nullopt};
+  std::optional<double> temp{std::nullopt};
 };
 
 class ImuInterface {
