@@ -40,5 +40,6 @@ int main(int argc, char **argv) {
     return -1;
   }
   node.run();
+  delete imu_interface;
   return 0;
 }

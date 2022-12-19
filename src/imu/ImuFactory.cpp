@@ -17,7 +17,7 @@ ImuInterface *ImuFactory::createImuByName(const std::string &imu_name,
                                           const std::string &spi_path) {
   LOG(I, "Imu type: " << imu_name);
   if (imu_name == "adis16448") {
-    auto adis = new Adis16448(spi_path);
+    auto* adis = new Adis16448(spi_path);
 
     if (adis->init() && adis->setBurstCRCEnabled(true)) {
       return adis;
