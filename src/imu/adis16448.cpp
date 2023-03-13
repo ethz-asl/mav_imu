@@ -20,7 +20,12 @@ Adis16448::~Adis16448() {
   writeReg(GPIO_CTRL, gpio_ctrl, "GPIO_CTRL");
 }
 
-bool Adis16448::init() {
+bool Adis16448::init(const ImuConfig& imuConfig) {
+
+  if (imuConfig.find("crc") != imuConfig.end()) {
+    std::string test = imuConfig.at("crc");
+    test == "true" ? setBurstCRCEnabled(true) : setBurstCRCEnabled(false);
+  }
 
   if (!spi_driver_.open()) {
     LOG(E, "open failed: " << strerror(errno));
@@ -69,6 +74,11 @@ bool Adis16448::init() {
   gpio_ctrl[1] |= (1 << 1);  // Set DIO2 output.
   writeReg(GPIO_CTRL, gpio_ctrl, "GPIO_CTRL");
 
+  if (!selftest()) {
+    LOG(F, "Self test failed");
+    return false;
+  }
+  LOG(I, "Imu Node initalized.");
   return true;
 }
 

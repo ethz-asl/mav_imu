@@ -28,17 +28,19 @@ int main(int argc, char **argv) {
   ImuInterface *imu_interface = ImuFactory::createImuByName(imu_name, spi_path);
   if (imu_interface == nullptr) {
     LOG(F, "Imu interface failed to initialize");
-    return -1;
+    return 1;
   }
+
+  ImuConfig imuConfig{};
+  imuConfig.insert({"crc", "true"});
+
+  if (!imu_interface->init(imuConfig)) {
+    return 1;
+  };
 
   ImuNode node{*imu_interface, frequency};
 
   signal(SIGINT, SignalHandler);
-
-  if (!node.init()) {
-    LOG(F, "Node init failed.");
-    return -1;
-  }
   node.run();
   return 0;
 }

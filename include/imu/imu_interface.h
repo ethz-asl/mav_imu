@@ -8,6 +8,7 @@
 #include "spi_driver.h"
 #include <optional>
 #include <sstream>
+#include <unordered_map>
 
 template<typename T>
 struct vec3 {
@@ -51,11 +52,19 @@ class ImuBurstResult {
   std::optional<double> temp{std::nullopt};
 };
 
+typedef std::unordered_map<std::string, std::string> ImuConfig;
+
 class ImuInterface {
  public:
-  virtual bool init() = 0;
   /**
-   * Imu health check.
+   * Imu-specific initialization
+   * @param imuConfig imu-specific settings
+   * @return true if initialized, otherwise false
+   */
+  virtual bool init(const ImuConfig& imuConfig) = 0;
+
+  /**
+   * Imu-specific health check.
    * @return true if successful, otherwise false
    */
   virtual bool selftest() = 0;

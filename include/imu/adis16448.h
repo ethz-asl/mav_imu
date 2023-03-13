@@ -29,7 +29,7 @@ class Adis16448 : public ImuInterface {
   bool setBurstCRCEnabled(bool b);
 
   bool selftest() override;
-  bool init() override;
+  bool init(const ImuConfig& imuConfig) override;
   std::optional<vec3<double>> getGyro() override;
   std::optional<vec3<double>> getAcceleration() override;
   std::optional<vec3<double>> getMagnetometer() override;

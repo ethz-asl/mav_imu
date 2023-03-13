@@ -31,8 +31,7 @@ TEST(adis16448_conversions, unsignedWordToInt_Basic) {
 
 TEST(adis16448, burst_with_crc_toggle) {
   Adis16448 adis_16448{"/dev/spidev0.1"};
-  adis_16448.init();
-  adis_16448.setBurstCRCEnabled(true);
+  adis_16448.init({{"crc", "true"}});
   adis_16448.burst();
   usleep(1e3);
   adis_16448.burst();
