@@ -12,7 +12,7 @@ class Adis16448 : public ImuInterface {
  public:
   /**
    * Adis16448 Constructor
-   * @param path to spidev e.g. /dev/spidev0.1
+   * @param path to spidev, e.g., "/dev/spidev0.1".
    */
   explicit Adis16448(const std::string &path);
 

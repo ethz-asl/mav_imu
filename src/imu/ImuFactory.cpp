@@ -4,6 +4,7 @@
 
 #include <imu/ImuFactory.h>
 #include <imu/adis16448.h>
+#include <imu/bmi088.h>
 #include <log++.h>
 #include <memory>
 
@@ -24,8 +25,15 @@ ImuInterface *ImuFactory::createImuByName(const std::string &imu_name,
     }
     LOG(E, "Failed to initialize " << imu_name);
     return nullptr;
-  }
+  } else if (imu_name == "bmi088") {
+    auto bmi = new Bmi088(spi_path);
 
+    if (bmi->init()) {
+      return bmi;
+    }
+    LOG(E, "Failed to initialize " << imu_name);
+    return nullptr;
+  }
 
   LOG(E, "Imu of type " << imu_name << " not supported");
   return nullptr;

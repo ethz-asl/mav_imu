@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}
         src/spi_driver.cpp
         src/imu_node.cpp
         src/imu/adis16448.cpp
+        src/imu/bmi088.cpp
         src/imu/ImuFactory.cpp)
 
 add_subdirectory(lib/lpp)
