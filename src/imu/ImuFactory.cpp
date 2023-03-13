@@ -13,11 +13,12 @@
  * @param spi_path path to spi device
  * @return initialized imu interface on success, otherwise nullptr
  */
-ImuInterface *ImuFactory::createImuByName(const std::string &imu_name,
+ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
                                           const std::string &spi_path) {
   LOG(I, "Imu type: " << imu_name);
   if (imu_name == "adis16448") {
-    auto adis = new Adis16448(spi_path);
+
+    auto adis = std::make_shared<Adis16448>(spi_path);
 
     if (adis->init() && adis->setBurstCRCEnabled(true)) {
       return adis;
