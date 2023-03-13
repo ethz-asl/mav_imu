@@ -12,7 +12,7 @@ class Bmi088 : public ImuInterface {
    * Bmi088 Constructor
    * @param path to spidev, e.g., "/dev/spidev0.1".
    */
-  explicit Bmi088(const std::string &path);
+  explicit Bmi088(std::string acc_path, std::string gyro_path);
 
   bool selftest() override;
   bool init() override;
@@ -29,7 +29,8 @@ class Bmi088 : public ImuInterface {
   int getRaw(std::vector<byte> cmd) override;
 
  private:
-  SpiDriver spi_driver_;
+  SpiDriver acc_spi_driver_;
+  SpiDriver gyro_spi_driver_;
 };
 
 #endif // MAV_IMU_SRC_IMU_BMI088_H_
