@@ -6,17 +6,19 @@ add_compile_options(-std=c++17 -w)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
+        lpp
         )
 find_package(roscpp)
 
 catkin_package(
         INCLUDE_DIRS
-        CATKIN_DEPENDS roscpp
+        CATKIN_DEPENDS
+        roscpp
+        lpp
 )
 
 include_directories(
         include
-        lib/lpp/include
         ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}
@@ -25,9 +27,7 @@ add_library(${PROJECT_NAME}
         src/imu/adis16448.cpp
         src/imu/ImuFactory.cpp)
 
-add_subdirectory(lib/lpp)
-target_link_directories(${PROJECT_NAME} PUBLIC lib/lpp)
-target_link_libraries(${PROJECT_NAME} Log++ ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_node
         src/main.cpp
