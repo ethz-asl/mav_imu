@@ -1,3 +1,6 @@
 [submodule "lib/lpp"]
 	path = lib/lpp
 	url = https://github.com/ethz-asl/lpp.git
+[submodule "lib/BMI08x-Sensor-API"]
+	path = lib/BMI08x-Sensor-API
+	url = https://github.com/boschsensortec/BMI08x-Sensor-API.git
