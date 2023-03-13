@@ -17,6 +17,7 @@ catkin_package(
 include_directories(
         include
         lib/lpp/include
+        lib/BMI08x-Sensor-API
         ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}

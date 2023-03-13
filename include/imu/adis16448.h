@@ -112,7 +112,6 @@ class Adis16448 : public ImuInterface {
    */
   static double convertTemperature(const std::vector<byte> &word);
 
-
   /**
    * Resets the Imu and turns the LED off.
    */
