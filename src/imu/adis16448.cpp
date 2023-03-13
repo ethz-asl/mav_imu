@@ -322,14 +322,13 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
   }
 
   int expected_crc = unsignedWordToInt({burstData[24], burstData[25]});
-  uint16_t sampleAsWord[11];
+  uint16_t sampleAsWord[12];
   memset(sampleAsWord, 0, sizeof(sampleAsWord));
 
   int count = 0;
 
   for (int i = 0; i < 24; i += 2) {
-    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt(
-        {burstData[i], burstData[i + 1]});
+    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt({burstData[i], burstData[i + 1]});
     sampleAsWord[count] = a;
     count++;
   }

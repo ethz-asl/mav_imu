@@ -1,3 +1,0 @@
-[submodule "lib/lpp"]
-	path = lib/lpp
-	url = https://github.com/ethz-asl/lpp.git

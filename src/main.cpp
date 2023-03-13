@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
 
-  ImuInterface *imu_interface = ImuFactory::createImuByName(imu_name, spi_path);
+  ImuInterfacePtr imu_interface = ImuFactory::createImuByName(imu_name, spi_path);
   if (imu_interface == nullptr) {
     LOG(F, "Imu interface failed to initialize");
     return -1;
