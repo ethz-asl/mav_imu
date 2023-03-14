@@ -7,12 +7,13 @@ Userspace driver for adis16448 written in C++17.
 1. Install dependencies
 
 ```shell
-$ sudo apt-get install ros-noetic-imu-tools
+$ sudo apt-get install ros-noetic-imu-tools libgoogle-glog-dev
+$ git clone git@github.com:ethz-asl/lpp.git
 ```
 
 2. Go to the catkin workspace and clone this repo in the `src` folder and build it with
 ```shell
-$ git clone --recurse-submodules https://github.com/ethz-asl/mav_imu.git
+$ git clone git@github.com:ethz-asl/mav_imu.git
 $ catkin build mav_imu
 ```
 3. Source environment

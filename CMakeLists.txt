@@ -6,17 +6,19 @@ add_compile_options(-std=c++17 -w)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
+        lpp
         )
 find_package(roscpp)
 
 catkin_package(
         INCLUDE_DIRS
-        CATKIN_DEPENDS roscpp
+        CATKIN_DEPENDS
+        roscpp
+        lpp
 )
 
 include_directories(
         include
-        lib/lpp/include
         lib/BMI08x-Sensor-API
         ${catkin_INCLUDE_DIRS})
 
@@ -34,9 +36,7 @@ add_library(${PROJECT_NAME}_BMI08x
         lib/BMI08x-Sensor-API/bmi08xa.c)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMI08x)
 
-add_subdirectory(lib/lpp)
-target_link_directories(${PROJECT_NAME} PUBLIC lib/lpp)
-target_link_libraries(${PROJECT_NAME} Log++ ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_node
         src/main.cpp
