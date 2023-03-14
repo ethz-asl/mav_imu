@@ -5,6 +5,7 @@
 #include <linux/spi/spidev.h>
 #include <log++.h>
 #include <string>
+#include <algorithm>
 
 Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
     : acc_spi_driver_(std::move(acc_path)),
@@ -60,17 +61,15 @@ int Bmi088::getRaw(std::vector<byte> cmd) {
 
 int8_t Bmi088::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                        void *intf_ptr) {
-  reg_addr |= 0x80;
-  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 2000000);
-  reg_data = res.data();
+  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 3000000);
+  std::copy(res.begin(), res.end(), reg_data);
   return res.empty() ? -1 : 0;
 }
 
 int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                         void *intf_ptr) {
-  reg_addr &= 0x7f;
-  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 2000000);
-  reg_data = res.data();
+  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 3000000);
+  //std::copy(res.begin(), res.end(), reg_data);
   return res.empty() ? -1 : 0;
 }
 
@@ -80,27 +79,27 @@ void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
   if (rslt != BMI08_OK) {
     LOG(E, api_name.c_str() << "\t");
     if (rslt == BMI08_E_NULL_PTR) {
-      LOG(E, "Error [" << rslt << "] : Null pointer\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Null pointer\r\n");
     } else if (rslt == BMI08_E_COM_FAIL) {
-      LOG(E, "Error [" << rslt << "] : Communication failure\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Communication failure\r\n");
     } else if (rslt == BMI08_E_DEV_NOT_FOUND) {
-      LOG(E, "Error [" << rslt << "] : Device not found\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Device not found\r\n");
     } else if (rslt == BMI08_E_OUT_OF_RANGE) {
-      LOG(E, "Error [" << rslt << "] : Out of Range\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Out of Range\r\n");
     } else if (rslt == BMI08_E_INVALID_INPUT) {
-      LOG(E, "Error [" << rslt << "] : Invalid input\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid input\r\n");
     } else if (rslt == BMI08_E_CONFIG_STREAM_ERROR) {
-      LOG(E, "Error [" << rslt << "] : Config stream error\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Config stream error\r\n");
     } else if (rslt == BMI08_E_RD_WR_LENGTH_INVALID) {
-      LOG(E, "Error [" << rslt << "] : Invalid Read write length\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid Read write length\r\n");
     } else if (rslt == BMI08_E_INVALID_CONFIG) {
-      LOG(E, "Error [" << rslt << "] : Invalid config\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid config\r\n");
     } else if (rslt == BMI08_E_FEATURE_NOT_SUPPORTED) {
-      LOG(E, "Error [" << rslt << "] : Feature not supported\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Feature not supported\r\n");
     } else if (rslt == BMI08_W_FIFO_EMPTY) {
       printf("Warning [%d] : FIFO empty\r\n");
     } else {
-      LOG(E, "Error [" << rslt << "] : Unknown error code\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Unknown error code\r\n");
     }
   }
 }
