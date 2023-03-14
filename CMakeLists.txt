@@ -27,6 +27,13 @@ add_library(${PROJECT_NAME}
         src/imu/bmi088.cpp
         src/imu/ImuFactory.cpp)
 
+# Bosch API
+add_library(${PROJECT_NAME}_BMI08x
+        lib/BMI08x-Sensor-API/bmi08a.c
+        lib/BMI08x-Sensor-API/bmi08g.c
+        lib/BMI08x-Sensor-API/bmi08xa.c)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMI08x)
+
 add_subdirectory(lib/lpp)
 target_link_directories(${PROJECT_NAME} PUBLIC lib/lpp)
 target_link_libraries(${PROJECT_NAME} Log++ ${catkin_LIBRARIES})

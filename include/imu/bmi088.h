@@ -41,8 +41,25 @@ class Bmi088 : public ImuInterface {
   static int8_t writeReg(uint8_t reg_addr, const uint8_t *reg_data,
                          uint32_t len, void *intf_ptr);
 
-  // Sleep ms function for BMI088 to be passed to BMI device driver.
+  /*!
+  *  @brief Sleep ms function for BMI088 to be passed to BMI device driver.
+  *
+  *  @param[in] period   : Sleep time in micro seconds.
+  *  @param[in] intf_ptr : Void pointer that can enable the linking of descriptors for interface related callbacks.
+  *
+  *  @return void.
+  */
   static void usSleep(uint32_t period, void *intf_ptr);
+
+  /*!
+  *  @brief Prints the execution status of the BMI APIs.
+  *
+  *  @param[in] api_name : Name of the API whose execution status has to be printed.
+  *  @param[in] rslt     : Error code returned by the API whose execution status has to be printed.
+  *
+  *  @return void.
+  */
+  void printErrorCodeResults(const std::string& api_name, int8_t rslt);
 
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;
