@@ -41,7 +41,7 @@ ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
         "Opening BMI088 with accelerometer CS \""
             << spi_path.c_str() << "\" and gyroscope CS \"" << gyro_path.c_str()
             << "\".");
-    auto bmi = new Bmi088(spi_path, gyro_path);
+    auto bmi = std::make_shared<Bmi088>(spi_path, gyro_path);
 
     if (bmi->init()) { return bmi; }
     LOG(E, "Failed to initialize " << imu_name);
