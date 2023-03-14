@@ -30,20 +30,20 @@ bool Bmi088::init() {
     return false;
   }
 
-  if (!gyro_spi_driver_.open()) {
-    LOG(E, "Gyroscope open failed: " << strerror(errno));
-    return false;
-  }
+  // if (!gyro_spi_driver_.open()) {
+  //   LOG(E, "Gyroscope open failed: " << strerror(errno));
+  //   return false;
+  // }
 
   if (!acc_spi_driver_.setMode(SPI_MODE_3)) {
     LOG(E, "Accelerometer setmode failed");
     return false;
   }
 
-  if (!gyro_spi_driver_.setMode(SPI_MODE_3)) {
-    LOG(E, "Gyroscope setmode failed");
-    return false;
-  }
+  // if (!gyro_spi_driver_.setMode(SPI_MODE_3)) {
+  //   LOG(E, "Gyroscope setmode failed");
+  //   return false;
+  // }
 
   auto rslt = bmi08xa_init(&dev_);
   printErrorCodeResults("bmi08xa_init", rslt);
