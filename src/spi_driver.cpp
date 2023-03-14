@@ -117,7 +117,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
   xfer[1].bits_per_word = CHAR_BIT;
 
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
-  if (status != 0) {
+  if (status < 0) {
     LOG(E, "ioctl SPI_IOC_MESSAGE failed: " << strerror(errno));
     return {};
   }
