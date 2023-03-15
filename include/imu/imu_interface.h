@@ -5,9 +5,10 @@
 #ifndef MAV_IMU_INCLUDE_IMU_INTERFACE_H_
 #define MAV_IMU_INCLUDE_IMU_INTERFACE_H_
 
-#include "spi_driver.h"
 #include <optional>
 #include <sstream>
+
+#include "spi_driver.h"
 
 template<typename T>
 struct vec3 {
@@ -71,6 +72,8 @@ class ImuInterface {
    * @return angular velocity in rad/s
    */
   virtual std::optional<vec3<double>> getGyro() = 0;
+
+  virtual bool calibrateGyro() = 0;
 
   /**
    * Gets acceleration data vector

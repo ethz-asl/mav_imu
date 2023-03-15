@@ -5,14 +5,17 @@
 #ifndef MAV_IMU__IMU_TEST_H_
 #define MAV_IMU__IMU_TEST_H_
 
-#include "imu/adis16448.h"
-#include "spi_driver.h"
+#include <string>
+
 #include <ros/ros.h>
 #include <sensor_msgs/FluidPressure.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/Temperature.h>
-#include <string>
+#include <std_srvs/Empty.h>
+
+#include "imu/adis16448.h"
+#include "spi_driver.h"
 
 class ImuNode {
  public:
@@ -28,10 +31,14 @@ class ImuNode {
   void processTemperature();
   void processFluidpressure();
 
+  bool runGyroCalibration(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+
   ros::Publisher imu_data_raw_pub_{};
   ros::Publisher imu_mag_pub_{};
   ros::Publisher imu_temp_pub_{};
-  ros::Publisher imu_baro_pub_;
+  ros::Publisher imu_baro_pub_{};
+
+  ros::ServiceServer gyro_calib_srv_{};
 
   ImuInterface &imu_interface_;
   int frequency_{};

@@ -12,6 +12,7 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency)
   imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
   imu_temp_pub_     = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
   imu_baro_pub_     = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
+  gyro_calib_srv_   = nh.advertiseService("imu/run_gyro_calib", &ImuNode::runGyroCalibration, this);
 }
 
 bool ImuNode::init() {
@@ -97,4 +98,10 @@ void ImuNode::processFluidpressure() {
 
     imu_baro_pub_.publish(pressure_msg);
   }
+
 }
+
+  bool ImuNode::runGyroCalibration(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res ) {
+    imu_interface_.calibrateGyro();
+    return true;
+  }
