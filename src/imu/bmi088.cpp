@@ -155,7 +155,8 @@ int Bmi088::getRaw(std::vector<byte> cmd) {
 
 int8_t Bmi088::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                        void *intf_ptr) {
-  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 3000000);
+  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len,
+                                                      spi_transfer_speed_hz_);
   std::copy(res.begin(), res.end(), reg_data);
   return res.empty() ? BMI08_E_COM_FAIL : BMI08_OK;
 }
@@ -165,7 +166,7 @@ int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
   std::vector<uint8_t> req = {reg_addr};
   std::copy(&reg_data[0], &reg_data[len], std::back_inserter(req));
   // TODO(rikba): Implement IOCT error.
-  static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, 3000000);
+  static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, spi_transfer_speed_hz_);
   return BMI08_OK;
 }
 

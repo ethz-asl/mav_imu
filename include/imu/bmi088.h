@@ -64,6 +64,8 @@ class Bmi088 : public ImuInterface {
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;
   bmi08_dev dev_;
+
+  inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
 };
 
 #endif // MAV_IMU_SRC_IMU_BMI088_H_
