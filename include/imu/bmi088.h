@@ -18,11 +18,9 @@ class Bmi088 : public ImuInterface {
 
   bool selftest() override;
   bool init() override;
-  std::optional<vec3<double>> getGyro() override { return std::nullopt; }
+  std::optional<vec3<double>> getGyro() override;
 
-  std::optional<vec3<double>> getAcceleration() override {
-    return std::nullopt;
-  }
+  std::optional<vec3<double>> getAcceleration() override;
 
   /**
    * Free file descriptor

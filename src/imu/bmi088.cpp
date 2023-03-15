@@ -106,6 +106,7 @@ bool Bmi088::init() {
   bmi08_data_sync_cfg sync_cfg;
   sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_2000HZ;
   rslt          = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
+  printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
 
   /*set accel interrupt pin configuration*/
   /*configure host data ready interrupt */
@@ -142,6 +143,7 @@ bool Bmi088::init() {
 
   /* Enable synchronization interrupt pin */
   rslt = bmi08a_set_data_sync_int_config(&int_config, &dev_);
+  printErrorCodeResults("bmi08a_set_data_sync_int_config", rslt);
   return true;
 }
 
@@ -168,6 +170,21 @@ int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
   // TODO(rikba): Implement IOCT error.
   static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, spi_transfer_speed_hz_);
   return BMI08_OK;
+}
+
+std::optional<vec3<double>> Bmi088::getGyro() {
+  bmi08_sensor_data gyro;
+  auto rslt = bmi08g_get_data(&gyro, &dev_);
+  printErrorCodeResults("bmi08g_get_data", rslt);
+
+  return vec3<double> {double(gyro.x), double(gyro.y), double(gyro.z)};
+}
+
+std::optional<vec3<double>> Bmi088::getAcceleration() {
+  bmi08_sensor_data acc;
+  auto rslt = bmi08a_get_data(&acc, &dev_);
+  printErrorCodeResults("bmi08a_get_data", rslt);
+  return vec3<double>{double(acc.x), double(acc.y), double(acc.z)};
 }
 
 void Bmi088::usSleep(uint32_t period, void *intf_ptr) { usleep(period); }
