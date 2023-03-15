@@ -1,11 +1,11 @@
 #include "imu/bmi088.h"
 
+#include <algorithm>
 #include <bmi08x.h>
 #include <iostream>
 #include <linux/spi/spidev.h>
 #include <log++.h>
 #include <string>
-#include <algorithm>
 
 Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
     : acc_spi_driver_(std::move(acc_path)),
@@ -25,28 +25,46 @@ bool Bmi088::selftest() {
 }
 
 bool Bmi088::init() {
+  // Create SPI drivers.
   if (!acc_spi_driver_.open()) {
     LOG(E, "Accelerometer open failed: " << strerror(errno));
     return false;
   }
 
-  // if (!gyro_spi_driver_.open()) {
-  //   LOG(E, "Gyroscope open failed: " << strerror(errno));
-  //   return false;
-  // }
+  if (!gyro_spi_driver_.open()) {
+    LOG(E, "Gyroscope open failed: " << strerror(errno));
+    return false;
+  }
 
   if (!acc_spi_driver_.setMode(SPI_MODE_3)) {
     LOG(E, "Accelerometer setmode failed");
     return false;
   }
 
-  // if (!gyro_spi_driver_.setMode(SPI_MODE_3)) {
-  //   LOG(E, "Gyroscope setmode failed");
-  //   return false;
-  // }
+  if (!gyro_spi_driver_.setMode(SPI_MODE_3)) {
+    LOG(E, "Gyroscope setmode failed");
+    return false;
+  }
 
-  auto rslt = bmi08xa_init(&dev_);
+  // Initialize accelerometer SPI.
+  int8_t rslt = -1;
+  rslt        = bmi08xa_init(&dev_);
   printErrorCodeResults("bmi08xa_init", rslt);
+  if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
+    LOG(E, "Failed accelerometer SPI initialization.");
+    return false;
+  }
+  LOG(I,
+      "Accel SPI initialized. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
+
+  // Initialize gyroscope SPI.
+  rslt = bmi08g_init(&dev_);
+  printErrorCodeResults("bmi08g_init", rslt);
+  if (rslt != BMI08_OK || dev_.accel_chip_id != BMI08_GYRO_CHIP_ID) {
+    LOG(E, "Failed gyroscope SPI initialization.");
+    return false;
+  }
+  LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
 
   return true;
 }
