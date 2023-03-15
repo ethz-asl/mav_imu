@@ -95,6 +95,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
                                   const int response_len,
                                   const uint32_t speed_hz) const {
   // Create one transfer to send command and one to receive response.
+  // TODO(rikba): Handle only transmit case.
   struct spi_ioc_transfer xfer[2];
   memset(xfer, 0, sizeof xfer);
 
@@ -128,6 +129,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
     return {};
   }
 
+  // TODO(rikba): Handle case where empty vector is returned but no error.
   return res;
 }
 

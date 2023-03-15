@@ -20,8 +20,11 @@ Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
 }
 
 bool Bmi088::selftest() {
-  LOG(E, "Bmi088 selftest not implemented.");
-  return false;
+  LOG(I, "Performing accelerometer selftest.");
+  auto acc_rslt = bmi08xa_perform_selftest(&dev_);
+  LOG(I, "Performing gyroscope selftest.");
+  auto gyro_rslt = bmi08g_perform_selftest(&dev_);
+  return (acc_rslt == BMI08_OK) && (gyro_rslt == BMI08_OK);
 }
 
 bool Bmi088::init() {
@@ -70,6 +73,11 @@ bool Bmi088::init() {
   }
   LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
 
+  // Soft reset.
+  rslt = bmi08a_soft_reset(&dev_);
+  printErrorCodeResults("bmi08a_soft_reset", rslt);
+  LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
+
   return true;
 }
 
@@ -85,14 +93,16 @@ int8_t Bmi088::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                        void *intf_ptr) {
   auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 3000000);
   std::copy(res.begin(), res.end(), reg_data);
-  return res.empty() ? -1 : 0;
+  return res.empty() ? BMI08_E_COM_FAIL : BMI08_OK;
 }
 
 int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
                         void *intf_ptr) {
-  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, 3000000);
-  //std::copy(res.begin(), res.end(), reg_data);
-  return res.empty() ? -1 : 0;
+  std::vector<uint8_t> req = {reg_addr};
+  std::copy(&reg_data[0], &reg_data[len], std::back_inserter(req));
+  // TODO(rikba): Implement IOCT error.
+  static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, 3000000);
+  return BMI08_OK;
 }
 
 void Bmi088::usSleep(uint32_t period, void *intf_ptr) { usleep(period); }
