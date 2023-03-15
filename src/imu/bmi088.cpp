@@ -51,7 +51,9 @@ bool Bmi088::init() {
   rslt        = bmi08xa_init(&dev_);
   printErrorCodeResults("bmi08xa_init", rslt);
   if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
-    LOG(E, "Failed accelerometer SPI initialization.");
+    LOG(E,
+        "Failed accelerometer SPI initialization. Chip id: 0x"
+            << std::hex << +dev_.accel_chip_id);
     return false;
   }
   LOG(I,
@@ -60,8 +62,10 @@ bool Bmi088::init() {
   // Initialize gyroscope SPI.
   rslt = bmi08g_init(&dev_);
   printErrorCodeResults("bmi08g_init", rslt);
-  if (rslt != BMI08_OK || dev_.accel_chip_id != BMI08_GYRO_CHIP_ID) {
-    LOG(E, "Failed gyroscope SPI initialization.");
+  if (rslt != BMI08_OK || dev_.gyro_chip_id != BMI08_GYRO_CHIP_ID) {
+    LOG(E,
+        "Failed gyroscope SPI initialization. Chip id: 0x"
+            << std::hex << +dev_.gyro_chip_id);
     return false;
   }
   LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
