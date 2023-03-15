@@ -23,12 +23,12 @@ Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
   // Configuration.
   dev_.accel_cfg.power = BMI08_ACCEL_PM_ACTIVE;
   dev_.accel_cfg.range = BMI088_ACCEL_RANGE_24G;
-  dev_.accel_cfg.bw = BMI08_ACCEL_BW_NORMAL;
-  dev_.accel_cfg.odr = BMI08_ACCEL_ODR_1600_HZ;
+  dev_.accel_cfg.bw    = BMI08_ACCEL_BW_NORMAL;
+  dev_.accel_cfg.odr   = BMI08_ACCEL_ODR_1600_HZ;
 
   dev_.gyro_cfg.power = BMI08_GYRO_PM_NORMAL;
   dev_.gyro_cfg.range = BMI08_GYRO_RANGE_2000_DPS;
-  dev_.gyro_cfg.bw = BMI08_GYRO_BW_532_ODR_2000_HZ;
+  dev_.gyro_cfg.bw    = BMI08_GYRO_BW_532_ODR_2000_HZ;
 }
 
 bool Bmi088::selftest() {
@@ -90,7 +90,6 @@ bool Bmi088::init() {
   printErrorCodeResults("bmi08a_soft_reset", rslt);
   LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
 
-
   // Configuration.
   rslt = bmi08a_set_power_mode(&dev_);
   printErrorCodeResults("bmi08a_set_power_mode", rslt);
@@ -104,6 +103,45 @@ bool Bmi088::init() {
   rslt = bmi08xa_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
 
+  bmi08_data_sync_cfg sync_cfg;
+  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_2000HZ;
+  rslt          = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
+
+  /*set accel interrupt pin configuration*/
+  /*configure host data ready interrupt */
+  bmi08_int_cfg int_config;
+  int_config.accel_int_config_1.int_channel = BMI08_INT_CHANNEL_1;
+  int_config.accel_int_config_1.int_type    = BMI08_ACCEL_SYNC_INPUT;
+  int_config.accel_int_config_1.int_pin_cfg.output_mode =
+      BMI08_INT_MODE_PUSH_PULL;
+  int_config.accel_int_config_1.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.accel_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
+
+  /*configure Accel syncronization input interrupt pin */
+  int_config.accel_int_config_2.int_channel = BMI08_INT_CHANNEL_2;
+  int_config.accel_int_config_2.int_type    = BMI08_ACCEL_INT_SYNC_DATA_RDY;
+  int_config.accel_int_config_2.int_pin_cfg.output_mode =
+      BMI08_INT_MODE_PUSH_PULL;
+  int_config.accel_int_config_2.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.accel_int_config_2.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
+
+  /*set gyro interrupt pin configuration*/
+  int_config.gyro_int_config_1.int_channel = BMI08_INT_CHANNEL_3;
+  int_config.gyro_int_config_1.int_type    = BMI08_GYRO_INT_DATA_RDY;
+  int_config.gyro_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
+  int_config.gyro_int_config_1.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.gyro_int_config_1.int_pin_cfg.output_mode =
+      BMI08_INT_MODE_PUSH_PULL;
+
+  int_config.gyro_int_config_2.int_channel = BMI08_INT_CHANNEL_4;
+  int_config.gyro_int_config_2.int_type    = BMI08_GYRO_INT_DATA_RDY;
+  int_config.gyro_int_config_2.int_pin_cfg.enable_int_pin = BMI08_DISABLE;
+  int_config.gyro_int_config_2.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.gyro_int_config_2.int_pin_cfg.output_mode =
+      BMI08_INT_MODE_PUSH_PULL;
+
+  /* Enable synchronization interrupt pin */
+  rslt = bmi08a_set_data_sync_int_config(&int_config, &dev_);
   return true;
 }
 
