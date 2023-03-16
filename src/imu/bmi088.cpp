@@ -341,3 +341,26 @@ void Bmi088::printImuConfig() {
   printGyroBw();
   printGyroOdr();
 }
+
+ImuBurstResult Bmi088::burst() {
+  struct ImuBurstResult ret {};
+  bmi08_sensor_data acc, gyro;
+
+  // TODO(rikba): This is not really burst but rather returning one after the other. Implement actual burst.
+  // TODO(rikba): Temperature
+  auto rslt = bmi08a_get_synchronized_data(&acc, &gyro, &dev_);
+  printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
+
+  if (rslt == BMI08_OK) {
+    ret.acceleration = vec3<double>(
+        {lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
+    ret.gyro = vec3<double>(
+        {lsbToDps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToDps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToDps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+  }
+
+  return ret;
+}

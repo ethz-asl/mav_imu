@@ -37,6 +37,12 @@ class Bmi088 : public ImuInterface {
   */
   void printImuConfig();
 
+    /**
+   * Custom burst mode
+   * @return struct with all values.
+   */
+  ImuBurstResult burst() override;
+
  private:
   // Read function for BMI088 to be passed to BMI device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
