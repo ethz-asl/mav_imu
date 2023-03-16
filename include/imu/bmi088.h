@@ -30,6 +30,13 @@ class Bmi088 : public ImuInterface {
 
   int getRaw(std::vector<byte> cmd) override;
 
+  /*!
+  *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
+
+  *  @return BMI communication status.
+  */
+  void printImuConfig();
+
  private:
   // Read function for BMI088 to be passed to BMI device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,

@@ -105,20 +105,15 @@ bool Bmi088::init() {
   rslt = bmi08xa_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
 
+  printImuConfig();
   bmi08_data_sync_cfg sync_cfg;
-  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_2000HZ;
-  rslt          = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
+  // TODO(rikba): Expose sync_cfg setting to user.
+  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_1000HZ;
+  rslt          = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
-  // TODO(rikba): Get parameters from registers to double check if they are actually set.
   LOG(I, "Configured IMU data synchronization.");
-  LOG(I,
-      "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range)
-                          << " m/s^2");
-  LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
-  LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
-  LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
-  printGyroBw();
-  printGyroOdr();
+
+  printImuConfig();
 
   /*set accel interrupt pin configuration*/
   /*configure host data ready interrupt */
@@ -328,4 +323,21 @@ uint8_t Bmi088::computeAccBw(uint8_t accel_cfg_bw) {
 
 uint16_t Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
   return acc_odr_min_ * (1 << (accel_cfg_odr - BMI08_ACCEL_ODR_12_5_HZ));
+}
+
+void Bmi088::printImuConfig() {
+  int8_t rslt = bmi08g_get_meas_conf(&dev_);
+  printErrorCodeResults("bmi08g_get_meas_conf", rslt);
+
+  rslt = bmi08a_get_meas_conf(&dev_);
+  printErrorCodeResults("bmi08a_get_meas_conf", rslt);
+
+  LOG(I,
+      "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range)
+                          << " m/s^2");
+  LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
+  LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
+  LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
+  printGyroBw();
+  printGyroOdr();
 }
