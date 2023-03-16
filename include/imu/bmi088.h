@@ -57,7 +57,31 @@ class Bmi088 : public ImuInterface {
   *
   *  @return void.
   */
-  void printErrorCodeResults(const std::string& api_name, int8_t rslt);
+  void printErrorCodeResults(const std::string &api_name, int8_t rslt);
+
+  /*!
+ * @brief This function converts lsb to meter per second squared for 16 bit accelerometer at
+ * range 2G, 4G, 8G or 16G.
+ *
+ * @param val: 16-bit accelerometer register value.
+ * @param g_range: Accelerometer range, e.g., BMI088_ACCEL_RANGE_24G.
+ * @param bit_width
+ *
+ * @return Acceleration in m/s
+ */
+  static float lsbToMps2(int16_t val, int8_t g_range, uint8_t bit_width);
+
+  /*!
+ * @brief This function converts lsb to degree per second for 16 bit gyro at
+ * range 125, 250, 500, 1000 or 2000dps.
+ *
+ * @param val: 16-bit gyroscope register value.
+ * @param g_range: Gyro range, e.g., BMI08_GYRO_RANGE_2000_DPS.
+ * @param bit_width
+ *
+ * @return Angular velocity in DPS
+ */
+  static float lsbToDps(int16_t val, uint8_t dps_range, uint8_t bit_width);
 
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;

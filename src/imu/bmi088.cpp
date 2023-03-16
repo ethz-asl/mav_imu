@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <bmi08x.h>
+#include <cmath>
 #include <iostream>
 #include <linux/spi/spidev.h>
 #include <log++.h>
@@ -177,14 +178,29 @@ std::optional<vec3<double>> Bmi088::getGyro() {
   auto rslt = bmi08g_get_data(&gyro, &dev_);
   printErrorCodeResults("bmi08g_get_data", rslt);
 
-  return vec3<double> {double(gyro.x), double(gyro.y), double(gyro.z)};
+  if (rslt == BMI08_OK) {
+    return vec3<double>(
+        {lsbToDps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToDps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToDps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+  } else {
+    return std::nullopt;
+  }
 }
 
 std::optional<vec3<double>> Bmi088::getAcceleration() {
   bmi08_sensor_data acc;
   auto rslt = bmi08a_get_data(&acc, &dev_);
   printErrorCodeResults("bmi08a_get_data", rslt);
-  return vec3<double>{double(acc.x), double(acc.y), double(acc.z)};
+
+  if (rslt == BMI08_OK) {
+    return vec3<double>(
+        {lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
+  } else {
+    return std::nullopt;
+  }
 }
 
 void Bmi088::usSleep(uint32_t period, void *intf_ptr) { usleep(period); }
@@ -216,4 +232,20 @@ void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
       LOG(E, "Error [" << int(rslt) << "] : Unknown error code\r\n");
     }
   }
+}
+
+float Bmi088::lsbToMps2(int16_t val, int8_t g_range, uint8_t bit_width) {
+
+  float half_scale = (float) ((std::pow(2.0f, (double) bit_width) / 2.0f));
+
+  auto acc_res = 3 * (1 << g_range);
+  return (g_ * val * acc_res) / half_scale;
+}
+
+float Bmi088::lsbToDps(int16_t val, uint8_t dps_range, uint8_t bit_width) {
+
+  float half_scale = (float) ((std::pow(2.0f, (double) bit_width) / 2.0f));
+
+  auto dps_res = 2000 / (1 << dps_range);
+  return (dps_res / (half_scale)) * (val);
 }

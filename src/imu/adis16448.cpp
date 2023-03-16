@@ -180,7 +180,7 @@ std::optional<vec3<double>> Adis16448::getAcceleration() {
 
 vec3<double> Adis16448::convertAcceleration(vec3<double> accel) {
   accel /= 1200.; // Convert to g
-  return accel * 9.80665;
+  return accel * g_;
 }
 
 std::optional<vec3<double>> Adis16448::getMagnetometer() {

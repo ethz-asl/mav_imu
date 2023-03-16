@@ -119,6 +119,9 @@ class ImuInterface {
   }
 
   // virtual int getSerialnumber();
+
+ protected:
+  inline static const constexpr double g_ = 9.80665; // TODO(rikba): Try looking this up from WolframAlpha on init.
 };
 
 #endif // MAV_IMU_INCLUDE_IMU_INTERFACE_H_
