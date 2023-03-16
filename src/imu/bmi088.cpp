@@ -30,6 +30,7 @@ Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
   dev_.gyro_cfg.power = BMI08_GYRO_PM_NORMAL;
   dev_.gyro_cfg.range = BMI08_GYRO_RANGE_2000_DPS;
   dev_.gyro_cfg.bw    = BMI08_GYRO_BW_532_ODR_2000_HZ;
+  dev_.gyro_cfg.odr   = BMI08_GYRO_BW_532_ODR_2000_HZ;
 }
 
 bool Bmi088::selftest() {
@@ -108,6 +109,16 @@ bool Bmi088::init() {
   sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_2000HZ;
   rslt          = bmi08a_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
+  // TODO(rikba): Get parameters from registers to double check if they are actually set.
+  LOG(I, "Configured IMU data synchronization.");
+  LOG(I,
+      "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range)
+                          << " m/s^2");
+  LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
+  LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
+  LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
+  printGyroBw();
+  printGyroOdr();
 
   /*set accel interrupt pin configuration*/
   /*configure host data ready interrupt */
@@ -234,18 +245,87 @@ void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
   }
 }
 
+void Bmi088::printGyroBw() {
+  uint16_t bw = 0xFFFF;
+  if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
+    bw = 532;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_230_ODR_2000_HZ) {
+    bw = 230;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_116_ODR_1000_HZ) {
+    bw = 116;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_47_ODR_400_HZ) {
+    bw = 47;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_23_ODR_200_HZ) {
+    bw = 23;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_12_ODR_100_HZ) {
+    bw = 12;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_64_ODR_200_HZ) {
+    bw = 64;
+  } else if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_32_ODR_100_HZ) {
+    bw = 32;
+  }
+
+  if (bw != 0xFFFF) {
+    LOG(I, "gyro_cfg.bw: " << bw << " Hz");
+  } else {
+    LOG(E, "Error printing gyro bandwidth.");
+  }
+}
+
+void Bmi088::printGyroOdr() {
+  uint16_t odr = 0xFFFF;
+  if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
+    odr = 2000;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_230_ODR_2000_HZ) {
+    odr = 2000;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_116_ODR_1000_HZ) {
+    odr = 1000;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_47_ODR_400_HZ) {
+    odr = 400;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_23_ODR_200_HZ) {
+    odr = 200;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_12_ODR_100_HZ) {
+    odr = 100;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_64_ODR_200_HZ) {
+    odr = 200;
+  } else if (dev_.gyro_cfg.odr == BMI08_GYRO_BW_32_ODR_100_HZ) {
+    odr = 100;
+  }
+
+  if (odr != 0xFFFF) {
+    LOG(I, "gyro_cfg.odr: " << odr << " Hz");
+  } else {
+    LOG(E, "Error printing gyro ODR.");
+  }
+}
+
 float Bmi088::lsbToMps2(int16_t val, int8_t g_range, uint8_t bit_width) {
 
   float half_scale = (float) ((std::pow(2.0f, (double) bit_width) / 2.0f));
 
-  auto acc_res = 3 * (1 << g_range);
-  return (g_ * val * acc_res) / half_scale;
+  return (g_ * val * computeAccRange(g_range)) / half_scale;
 }
 
 float Bmi088::lsbToDps(int16_t val, uint8_t dps_range, uint8_t bit_width) {
 
   float half_scale = (float) ((std::pow(2.0f, (double) bit_width) / 2.0f));
 
-  auto dps_res = 2000 / (1 << dps_range);
-  return (dps_res / (half_scale)) * (val);
+  uint16_t dps_res = dps_range_max_ / (1 << dps_range);
+  return (computeGyroRange(dps_range) / (half_scale)) * (val);
+}
+
+uint8_t Bmi088::computeAccRange(uint8_t accel_cfg_range) {
+  return g_range_min_ * (1 << (accel_cfg_range - BMI088_ACCEL_RANGE_3G));
+}
+
+uint16_t Bmi088::computeGyroRange(uint16_t gyro_cfg_range) {
+  return dps_range_max_ / (1 << (gyro_cfg_range - BMI08_GYRO_RANGE_2000_DPS));
+}
+
+uint8_t Bmi088::computeAccBw(uint8_t accel_cfg_bw) {
+  return acc_bw_osr_max_ / (1 << (accel_cfg_bw - BMI08_ACCEL_BW_OSR4));
+}
+
+uint16_t Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
+  return acc_odr_min_ * (1 << (accel_cfg_odr - BMI08_ACCEL_ODR_12_5_HZ));
 }

@@ -60,6 +60,48 @@ class Bmi088 : public ImuInterface {
   void printErrorCodeResults(const std::string &api_name, int8_t rslt);
 
   /*!
+  *  @brief Prints the gyro bandwidth setting.
+
+  *  @return void.
+  */
+  void printGyroBw();
+
+  /*!
+  *  @brief Prints the gyro output data rate setting.
+
+  *  @return void.
+  */
+  void printGyroOdr();
+
+  /*!
+  *  @brief Computes the accelerometer range from settings.
+
+  *  @return Accelerometer range in m/s^2.
+  */
+  static uint8_t computeAccRange(uint8_t accel_cfg_range);
+
+  /*!
+  *  @brief Computes the accelerometer bandwidth from settings.
+
+  *  @return Accelerometer bandwidth in Hz.
+  */
+  static uint8_t computeAccBw(uint8_t accel_cfg_bw);
+
+  /*!
+  *  @brief Computes the accelerometer output data rate (ODR) from settings.
+
+  *  @return Accelerometer output data rate in Hz.
+  */
+  static uint16_t computeAccOdr(uint16_t accel_cfg_odr);
+
+  /*!
+  *  @brief Computes the gyroscope range from settings.
+
+  *  @return Gyroscope range in dps.
+  */
+  static uint16_t computeGyroRange(uint16_t gyro_cfg_range);
+
+  /*!
  * @brief This function converts lsb to meter per second squared for 16 bit accelerometer at
  * range 2G, 4G, 8G or 16G.
  *
@@ -88,6 +130,12 @@ class Bmi088 : public ImuInterface {
   bmi08_dev dev_;
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
+  inline static const constexpr uint8_t g_range_min_            = 3;
+  inline static const constexpr uint16_t dps_range_max_         = 2000;
+  inline static const constexpr double acc_odr_min_             = 12.5;
+  inline static const constexpr uint8_t acc_bw_osr_max_         = 4;
+  inline static const constexpr uint16_t gyro_odr_max_          = 2000;
+  inline static const constexpr uint16_t gyro_bw_max_           = 532;
 };
 
 #endif // MAV_IMU_SRC_IMU_BMI088_H_
