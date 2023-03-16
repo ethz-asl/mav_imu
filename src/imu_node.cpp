@@ -14,16 +14,9 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency)
   imu_baro_pub_     = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
 }
 
-bool ImuNode::init() {
-  if (!imu_interface_.selftest()) {
-    return true;
-  }
-  LOG(I, "Imu Node initalized.");
-  return true;
-}
-
 int ImuNode::run() {
   LOG(I, "Node started");
+  imu_interface_.printImuConfig();
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(frequency_);
 

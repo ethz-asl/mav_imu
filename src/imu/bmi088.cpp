@@ -87,6 +87,9 @@ bool Bmi088::init() {
   }
   LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
 
+  // Self test.
+  if (!selftest()) { return false; }
+
   // Soft reset.
   rslt = bmi08a_soft_reset(&dev_);
   printErrorCodeResults("bmi08a_soft_reset", rslt);
@@ -105,15 +108,12 @@ bool Bmi088::init() {
   rslt = bmi08xa_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
 
-  printImuConfig();
   bmi08_data_sync_cfg sync_cfg;
   // TODO(rikba): Expose sync_cfg setting to user.
   sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_1000HZ;
   rslt          = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
-
-  printImuConfig();
 
   /*set accel interrupt pin configuration*/
   /*configure host data ready interrupt */
@@ -186,9 +186,9 @@ std::optional<vec3<double>> Bmi088::getGyro() {
 
   if (rslt == BMI08_OK) {
     return vec3<double>(
-        {lsbToDps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToDps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToDps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+        {lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
   } else {
     return std::nullopt;
   }
@@ -301,12 +301,12 @@ float Bmi088::lsbToMps2(int16_t val, int8_t g_range, uint8_t bit_width) {
   return (g_ * val * computeAccRange(g_range)) / half_scale;
 }
 
-float Bmi088::lsbToDps(int16_t val, uint8_t dps_range, uint8_t bit_width) {
+float Bmi088::lsbToRps(int16_t val, uint8_t dps_range, uint8_t bit_width) {
 
   float half_scale = (float) ((std::pow(2.0f, (double) bit_width) / 2.0f));
 
   uint16_t dps_res = dps_range_max_ / (1 << dps_range);
-  return (computeGyroRange(dps_range) / (half_scale)) * (val);
+  return (computeGyroRange(dps_range) / (half_scale)) * (val) * (M_PI / 180.);
 }
 
 uint8_t Bmi088::computeAccRange(uint8_t accel_cfg_range) {
@@ -357,9 +357,9 @@ ImuBurstResult Bmi088::burst() {
          lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
          lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
     ret.gyro = vec3<double>(
-        {lsbToDps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToDps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToDps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+        {lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+         lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
   }
 
   return ret;

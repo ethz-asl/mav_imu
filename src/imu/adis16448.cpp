@@ -37,6 +37,9 @@ bool Adis16448::init() {
     return false;
   }
 
+  // Selftest
+  if (!selftest()) { return false; }
+
   // Software reset.
   softwareReset();
 
@@ -73,14 +76,17 @@ bool Adis16448::init() {
 }
 
 std::vector<byte> Adis16448::readReg(const uint8_t addr) {
-  return spi_driver_.xfer(CMD(addr), spi_response_size_, spi_transfer_speed_hz_);
+  return spi_driver_.xfer(CMD(addr), spi_response_size_,
+                          spi_transfer_speed_hz_);
 }
 
 void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
                          const std::string &name) {
   // TODO(rikba): I don't know how to do hex formatting with lpp. Replace comma
   // with two digit hex
-  LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
+  LOG(I,
+      std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x"
+               << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
@@ -106,9 +112,7 @@ bool Adis16448::selftest() {
 
   std::vector<byte> res = readReg(DIAG_STAT);
 
-  if (res.empty()) {
-    return false;
-  }
+  if (res.empty()) { return false; }
 
   if (res[1] & (1 << 5)) {
     LOG(E, "ADIS16448 self-test failed.");
@@ -131,9 +135,7 @@ bool Adis16448::selftest() {
 bool Adis16448::testSPI() {
   auto res = readReg(PROD_ID);
 
-  if (res.empty()) {
-    return false;
-  }
+  if (res.empty()) { return false; }
 
   LOG(I, std::hex << "Adis16448 PROD_ID: 0x" << +res[0] << +res[1]);
 
@@ -221,7 +223,8 @@ double Adis16448::convertTemperature(const std::vector<byte> &word) {
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
-  std::vector<byte> res = spi_driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
+  std::vector<byte> res =
+      spi_driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
   return unsignedWordToInt(res);
 }
 
@@ -265,7 +268,8 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
     }
 
     LOG(E,
-        "Error on burst mode disable: " << (int) res[0] << ", " << (int) res[1]);
+        "Error on burst mode disable: " << (int) res[0] << ", "
+                                        << (int) res[1]);
     return false;
   }
 }
@@ -317,9 +321,7 @@ ImuBurstResult Adis16448::burst() {
 }
 
 bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
-  if (burstData.size() != DEFAULT_BURST_LEN + 2) {
-    return false;
-  }
+  if (burstData.size() != DEFAULT_BURST_LEN + 2) { return false; }
 
   int expected_crc = unsignedWordToInt({burstData[24], burstData[25]});
   uint16_t sampleAsWord[12];
@@ -328,7 +330,8 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
   int count = 0;
 
   for (int i = 0; i < 24; i += 2) {
-    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt({burstData[i], burstData[i + 1]});
+    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt(
+        {burstData[i], burstData[i + 1]});
     sampleAsWord[count] = a;
     count++;
   }
@@ -347,7 +350,7 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   unsigned int upperByte; // Upper Byte of burstData word
   unsigned int POLY;      // Divisor used during CRC computation
   POLY = 0x1021;          // Define divisor
-  crc  = 0xFFFF;          // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
+  crc = 0xFFFF; // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
   // Compute CRC on burst data starting from XGYRO_OUT and ending with TEMP_OUT.
   // Start with the lower byte and then the upper byte of each word.
   // i.e. Compute XGYRO_OUT_LSB CRC first and then compute XGYRO_OUT_MSB CRC.
@@ -356,21 +359,35 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
     lowerByte = (burstData[i] & 0xFF);
     data      = lowerByte; // Compute lower byte CRC first
     for (ii = 0; ii < 8; ii++, data >>= 1) {
-      if ((crc & 0x0001) ^ (data & 0x0001))
-        crc = (crc >> 1) ^ POLY;
+      if ((crc & 0x0001) ^ (data & 0x0001)) crc = (crc >> 1) ^ POLY;
       else
         crc >>= 1;
     }
     data = upperByte; // Compute upper byte of CRC
     for (ii = 0; ii < 8; ii++, data >>= 1) {
-      if ((crc & 0x0001) ^ (data & 0x0001))
-        crc = (crc >> 1) ^ POLY;
+      if ((crc & 0x0001) ^ (data & 0x0001)) crc = (crc >> 1) ^ POLY;
       else
         crc >>= 1;
     }
   }
   crc  = ~crc; // Compute complement of CRC\par
   data = crc;
-  crc  = (crc << 8) | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
+  crc  = (crc << 8)
+      | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
   return crc;
+}
+
+void Adis16448::printImuConfig() {
+  auto smpl_prd = readReg(SMPL_PRD);
+  auto D        = smpl_prd[1] & 0b111111;
+  LOG(I, "smpl_prd decimation rate variable D: " << +(D));
+  LOG(I, "Output data rate (ODR): " << 819.2 / (1 << D) << " Hz");
+
+  auto sens_avg = readReg(SENS_AVG);
+  auto B        = sens_avg[0] & 0b111;
+  LOG(I, "sens_avg filter size variable B: " << +(B));
+  LOG(I, "Bartlett windows size: " << (1 << B));
+
+  auto gyro_range = sens_avg[1] & 0b111;
+  LOG(I, "sens_avg gyro range: " << 250 * (1 << (gyro_range - 1)) << " dps");
 }

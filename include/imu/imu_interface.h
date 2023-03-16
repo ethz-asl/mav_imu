@@ -58,7 +58,6 @@ class ImuInterface {
    * Imu health check.
    * @return true if successful, otherwise false
    */
-  virtual bool selftest() = 0;
 
   /**
    * Cleanup and close files used by IMU
@@ -120,8 +119,16 @@ class ImuInterface {
 
   // virtual int getSerialnumber();
 
+  /*!
+  *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
+
+  *  @return void.
+  */
+  virtual void printImuConfig() = 0;
+
  protected:
-  inline static const constexpr double g_ = 9.80665; // TODO(rikba): Try looking this up from WolframAlpha on init.
+  inline static const constexpr double g_ =
+      9.80665; // TODO(rikba): Try looking this up from WolframAlpha on init.
 };
 
 #endif // MAV_IMU_INCLUDE_IMU_INTERFACE_H_

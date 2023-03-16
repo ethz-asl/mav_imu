@@ -16,7 +16,6 @@ class Bmi088 : public ImuInterface {
    */
   explicit Bmi088(std::string acc_path, std::string gyro_path);
 
-  bool selftest() override;
   bool init() override;
   std::optional<vec3<double>> getGyro() override;
 
@@ -33,17 +32,19 @@ class Bmi088 : public ImuInterface {
   /*!
   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
 
-  *  @return BMI communication status.
+  *  @return void.
   */
-  void printImuConfig();
+  void printImuConfig() override;
 
-    /**
+  /**
    * Custom burst mode
    * @return struct with all values.
    */
   ImuBurstResult burst() override;
 
  private:
+  bool selftest();
+
   // Read function for BMI088 to be passed to BMI device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                         void *intf_ptr);
@@ -134,9 +135,9 @@ class Bmi088 : public ImuInterface {
  * @param g_range: Gyro range, e.g., BMI08_GYRO_RANGE_2000_DPS.
  * @param bit_width
  *
- * @return Angular velocity in DPS
+ * @return Angular velocity in radians per second (RPS)
  */
-  static float lsbToDps(int16_t val, uint8_t dps_range, uint8_t bit_width);
+  static float lsbToRps(int16_t val, uint8_t dps_range, uint8_t bit_width);
 
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;
