@@ -21,7 +21,7 @@ Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
   dev_.write          = &(Bmi088::writeReg);
   dev_.delay_us       = &(Bmi088::usSleep);
 
-  // Configuration.
+  // Default configuration. (These values are overwritten in configuration process.)
   dev_.accel_cfg.power = BMI08_ACCEL_PM_ACTIVE;
   dev_.accel_cfg.range = BMI088_ACCEL_RANGE_24G;
   dev_.accel_cfg.bw    = BMI08_ACCEL_BW_NORMAL;
@@ -51,7 +51,7 @@ bool Bmi088::setupBmiSpi() {
   if (rslt != BMI08_OK) { return false; }
 
   // Initialize accelerometer SPI.
-  rslt        = bmi08xa_init(&dev_);
+  rslt = bmi08xa_init(&dev_);
   printErrorCodeResults("bmi08xa_init", rslt);
   if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
     LOG(E,
@@ -129,7 +129,7 @@ bool Bmi088::init() {
   bmi08_data_sync_cfg sync_cfg;
   // TODO(rikba): Expose sync_cfg setting to user.
   sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ;
-  auto rslt          = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
+  auto rslt     = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
