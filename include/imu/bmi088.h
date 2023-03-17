@@ -132,11 +132,10 @@ class Bmi088 : public ImuInterface {
  *
  * @param val: 16-bit accelerometer register value.
  * @param g_range: Accelerometer range, e.g., BMI088_ACCEL_RANGE_24G.
- * @param bit_width
  *
  * @return Acceleration in m/s
  */
-  static float lsbToMps2(int16_t val, int8_t g_range, uint8_t bit_width);
+  static double lsbToMps2(int16_t val, int8_t g_range);
 
   /*!
  * @brief This function converts lsb to degree per second for 16 bit gyro at
@@ -144,11 +143,10 @@ class Bmi088 : public ImuInterface {
  *
  * @param val: 16-bit gyroscope register value.
  * @param g_range: Gyro range, e.g., BMI08_GYRO_RANGE_2000_DPS.
- * @param bit_width
  *
  * @return Angular velocity in radians per second (RPS)
  */
-  static float lsbToRps(int16_t val, uint8_t dps_range, uint8_t bit_width);
+  static double lsbToRps(int16_t val, uint8_t dps_range);
 
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;
@@ -180,6 +178,7 @@ class Bmi088 : public ImuInterface {
   inline static const constexpr uint8_t acc_bw_osr_max_         = 4;
   inline static const constexpr uint16_t gyro_odr_max_          = 2000;
   inline static const constexpr uint16_t gyro_bw_max_           = 532;
+  inline static const constexpr uint32_t half_scale_ = 1 << (BMI08_16_BIT_RESOLUTION - 1);
 };
 
 #endif // MAV_IMU_SRC_IMU_BMI088_H_
