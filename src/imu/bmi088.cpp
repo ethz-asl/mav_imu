@@ -291,7 +291,7 @@ uint8_t Bmi088::computeAccBw(uint8_t accel_cfg_bw) {
   return acc_bw_osr_max_ / (1 << (accel_cfg_bw - BMI08_ACCEL_BW_OSR4));
 }
 
-uint16_t Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
+double Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
   return acc_odr_min_ * (1 << (accel_cfg_odr - BMI08_ACCEL_ODR_12_5_HZ));
 }
 

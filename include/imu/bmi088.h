@@ -117,7 +117,7 @@ class Bmi088 : public ImuInterface {
 
   *  @return Accelerometer output data rate in Hz.
   */
-  static uint16_t computeAccOdr(uint16_t accel_cfg_odr);
+  static double computeAccOdr(uint16_t accel_cfg_odr);
 
   /*!
   *  @brief Computes the gyroscope range from settings.
