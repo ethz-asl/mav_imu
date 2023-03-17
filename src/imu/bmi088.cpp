@@ -21,10 +21,8 @@ bool Bmi088::selftest() {
 }
 
 bool Bmi088::setupBmiSpi() {
-  int8_t rslt = -1;
-
   // Initialize accelerometer SPI.
-  rslt = bmi08xa_init(&dev_);
+  int8_t rslt = bmi08xa_init(&dev_);
   printErrorCodeResults("bmi08xa_init", rslt);
   if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
     LOG(E,
