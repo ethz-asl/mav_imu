@@ -110,33 +110,39 @@ bool Bmi088::init() {
   LOG(I, "Configured IMU data synchronization.");
 
   /*set accel interrupt pin configuration*/
-  /*configure host data ready interrupt */
-  bmi08_int_cfg int_config;
-  int_config.accel_int_config_1.int_channel                = BMI08_INT_CHANNEL_1;
-  int_config.accel_int_config_1.int_type                   = BMI08_ACCEL_SYNC_INPUT;
-  int_config.accel_int_config_1.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
-  int_config.accel_int_config_1.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
-  int_config.accel_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
 
-  /*configure Accel syncronization input interrupt pin */
-  int_config.accel_int_config_2.int_channel                = BMI08_INT_CHANNEL_2;
-  int_config.accel_int_config_2.int_type                   = BMI08_ACCEL_INT_SYNC_DATA_RDY;
-  int_config.accel_int_config_2.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
-  int_config.accel_int_config_2.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
-  int_config.accel_int_config_2.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
-
-  /*set gyro interrupt pin configuration*/
-  int_config.gyro_int_config_1.int_channel                = BMI08_INT_CHANNEL_3;
-  int_config.gyro_int_config_1.int_type                   = BMI08_GYRO_INT_DATA_RDY;
-  int_config.gyro_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
-  int_config.gyro_int_config_1.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
-  int_config.gyro_int_config_1.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
-
-  int_config.gyro_int_config_2.int_channel                = BMI08_INT_CHANNEL_4;
-  int_config.gyro_int_config_2.int_type                   = BMI08_GYRO_INT_DATA_RDY;
-  int_config.gyro_int_config_2.int_pin_cfg.enable_int_pin = BMI08_DISABLE;
-  int_config.gyro_int_config_2.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
-  int_config.gyro_int_config_2.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
+  bmi08_int_cfg int_config{
+      /*configure host data ready interrupt */
+      .accel_int_config_1 =
+          bmi08_accel_int_channel_cfg{.int_channel = BMI08_INT_CHANNEL_1,
+                                      .int_type    = BMI08_ACCEL_SYNC_INPUT,
+                                      .int_pin_cfg =
+                                          bmi08_int_pin_cfg{.lvl         = BMI08_INT_ACTIVE_HIGH,
+                                                            .output_mode = BMI08_INT_MODE_PUSH_PULL,
+                                                            .enable_int_pin = BMI08_ENABLE}},
+      /*configure Accel syncronization input interrupt pin */
+      .accel_int_config_2 =
+          bmi08_accel_int_channel_cfg{.int_channel = BMI08_INT_CHANNEL_2,
+                                      .int_type    = BMI08_ACCEL_INT_SYNC_DATA_RDY,
+                                      .int_pin_cfg =
+                                          bmi08_int_pin_cfg{.lvl         = BMI08_INT_ACTIVE_HIGH,
+                                                            .output_mode = BMI08_INT_MODE_PUSH_PULL,
+                                                            .enable_int_pin = BMI08_ENABLE}},
+      /*set gyro interrupt pin configuration*/
+      .gyro_int_config_1 =
+          bmi08_gyro_int_channel_cfg{.int_channel = BMI08_INT_CHANNEL_3,
+                                     .int_type    = BMI08_GYRO_INT_DATA_RDY,
+                                     .int_pin_cfg =
+                                         bmi08_int_pin_cfg{.lvl         = BMI08_INT_ACTIVE_HIGH,
+                                                           .output_mode = BMI08_INT_MODE_PUSH_PULL,
+                                                           .enable_int_pin = BMI08_ENABLE}},
+      /* Disable last gyro interrupt pin*/
+      .gyro_int_config_2 = bmi08_gyro_int_channel_cfg{
+          .int_channel = BMI08_INT_CHANNEL_4,
+          .int_type    = BMI08_GYRO_INT_DATA_RDY,
+          .int_pin_cfg = bmi08_int_pin_cfg{.lvl            = BMI08_INT_ACTIVE_HIGH,
+                                           .output_mode    = BMI08_INT_MODE_PUSH_PULL,
+                                           .enable_int_pin = BMI08_DISABLE}}};
 
   /* Enable synchronization interrupt pin */
   rslt = bmi08a_set_data_sync_int_config(&int_config, &dev_);
