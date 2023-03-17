@@ -85,11 +85,11 @@ void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
-  spi_driver_.xfer({addr, data[1]}, 0, spi_transfer_speed_hz_);
+  auto ret = spi_driver_.xfer({addr, data[1]}, 0, spi_transfer_speed_hz_);
   // Increment address.
   addr = (addr | 0x1);
   // Send high word.
-  spi_driver_.xfer({addr, data[0]}, 0, spi_transfer_speed_hz_);
+  ret = spi_driver_.xfer({addr, data[0]}, 0, spi_transfer_speed_hz_);
 }
 
 bool Adis16448::selftest() {

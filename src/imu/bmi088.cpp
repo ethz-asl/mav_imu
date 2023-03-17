@@ -158,7 +158,7 @@ int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
   std::vector<uint8_t> req = {reg_addr};
   std::copy(&reg_data[0], &reg_data[len], std::back_inserter(req));
   // TODO(rikba): Implement IOCT error.
-  static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, spi_transfer_speed_hz_);
+  auto ret = static_cast<SpiDriver *>(intf_ptr)->xfer(req, 0, spi_transfer_speed_hz_);
   return BMI08_OK;
 }
 
@@ -196,27 +196,27 @@ void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) con
   if (rslt != BMI08_OK) {
     LOG(E, api_name.c_str() << "\t");
     if (rslt == BMI08_E_NULL_PTR) {
-      LOG(E, "Error [" << int(rslt) << "] : Null pointer\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Null pointer");
     } else if (rslt == BMI08_E_COM_FAIL) {
-      LOG(E, "Error [" << int(rslt) << "] : Communication failure\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Communication failure");
     } else if (rslt == BMI08_E_DEV_NOT_FOUND) {
-      LOG(E, "Error [" << int(rslt) << "] : Device not found\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Device not found");
     } else if (rslt == BMI08_E_OUT_OF_RANGE) {
-      LOG(E, "Error [" << int(rslt) << "] : Out of Range\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Out of Range");
     } else if (rslt == BMI08_E_INVALID_INPUT) {
-      LOG(E, "Error [" << int(rslt) << "] : Invalid input\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid input");
     } else if (rslt == BMI08_E_CONFIG_STREAM_ERROR) {
-      LOG(E, "Error [" << int(rslt) << "] : Config stream error\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Config stream error");
     } else if (rslt == BMI08_E_RD_WR_LENGTH_INVALID) {
-      LOG(E, "Error [" << int(rslt) << "] : Invalid Read write length\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid Read write length");
     } else if (rslt == BMI08_E_INVALID_CONFIG) {
-      LOG(E, "Error [" << int(rslt) << "] : Invalid config\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Invalid config");
     } else if (rslt == BMI08_E_FEATURE_NOT_SUPPORTED) {
-      LOG(E, "Error [" << int(rslt) << "] : Feature not supported\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Feature not supported");
     } else if (rslt == BMI08_W_FIFO_EMPTY) {
-      printf("Warning [%d] : FIFO empty\r\n");
+      LOG(W, "Warning [" << int(rslt) << "] : FIFO empty");
     } else {
-      LOG(E, "Error [" << int(rslt) << "] : Unknown error code\r\n");
+      LOG(E, "Error [" << int(rslt) << "] : Unknown error code");
     }
   }
 }
