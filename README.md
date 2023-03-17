@@ -1,6 +1,6 @@
 # mav_imu
 
-Userspace driver for adis16448 written in C++17.
+Userspace driver for adis16448 and BMI088 written in C++17.
 
 ## Setup
 
