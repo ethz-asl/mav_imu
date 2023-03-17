@@ -53,7 +53,7 @@ class Adis16448 : public ImuInterface {
 
   *  @return void.
   */
-  void const printImuConfig() override;
+  void printImuConfig() override;
 
   /**
    * Free file descriptor
@@ -74,12 +74,12 @@ class Adis16448 : public ImuInterface {
   /**
    * Helper function to read a registry entry.
    */
-  const std::vector<byte> readReg(uint8_t addr);
+  std::vector<byte> readReg(uint8_t addr) const;
 
   /**
    * Helper function to overwrite a registry entry.
    */
-  const void writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name);
+  void writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name) const;
 
   /**
    * Run a test read sequence for SPI communcation.

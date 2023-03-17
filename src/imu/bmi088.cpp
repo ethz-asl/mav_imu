@@ -163,7 +163,7 @@ int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
 }
 
 std::optional<vec3<double>> Bmi088::getGyro() {
-  bmi08_sensor_data gyro;
+  bmi08_sensor_data gyro{};
   auto rslt = bmi08g_get_data(&gyro, &dev_);
   printErrorCodeResults("bmi08g_get_data", rslt);
 
@@ -177,7 +177,7 @@ std::optional<vec3<double>> Bmi088::getGyro() {
 }
 
 std::optional<vec3<double>> Bmi088::getAcceleration() {
-  bmi08_sensor_data acc;
+  bmi08_sensor_data acc{};
   auto rslt = bmi08a_get_data(&acc, &dev_);
   printErrorCodeResults("bmi08a_get_data", rslt);
 
@@ -192,7 +192,7 @@ std::optional<vec3<double>> Bmi088::getAcceleration() {
 
 void Bmi088::usSleep(uint32_t period, void *intf_ptr) { usleep(period); }
 
-const void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
+void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) const {
   if (rslt != BMI08_OK) {
     LOG(E, api_name.c_str() << "\t");
     if (rslt == BMI08_E_NULL_PTR) {
@@ -221,7 +221,7 @@ const void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rsl
   }
 }
 
-const void Bmi088::printGyroBw() {
+void Bmi088::printGyroBw() const {
   uint16_t bw = 0xFFFF;
   if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
     bw = 532;
@@ -248,7 +248,7 @@ const void Bmi088::printGyroBw() {
   }
 }
 
-const void Bmi088::printGyroOdr() {
+void Bmi088::printGyroOdr() const {
   uint16_t odr = 0xFFFF;
   if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
     odr = 2000;
@@ -299,7 +299,7 @@ double Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
   return acc_odr_min_ * (1 << (accel_cfg_odr - BMI08_ACCEL_ODR_12_5_HZ));
 }
 
-const void Bmi088::printImuConfig() {
+void Bmi088::printImuConfig() {
   int8_t rslt = bmi08g_get_meas_conf(&dev_);
   printErrorCodeResults("bmi08g_get_meas_conf", rslt);
 
@@ -316,7 +316,7 @@ const void Bmi088::printImuConfig() {
 
 ImuBurstResult Bmi088::burst() {
   struct ImuBurstResult ret {};
-  bmi08_sensor_data acc, gyro;
+  bmi08_sensor_data acc{}, gyro{};
 
   // TODO(rikba): This is not really burst but rather returning one after the other. Implement actual burst.
   // TODO(rikba): Temperature

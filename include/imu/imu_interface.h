@@ -124,7 +124,7 @@ class ImuInterface {
 
   *  @return void.
   */
-  virtual const void printImuConfig() = 0;
+  virtual void printImuConfig() = 0;
 
  protected:
   inline static const constexpr double g_ =

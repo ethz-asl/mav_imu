@@ -75,11 +75,12 @@ bool Adis16448::init() {
   return true;
 }
 
-const std::vector<byte> Adis16448::readReg(const uint8_t addr) {
+std::vector<byte> Adis16448::readReg(const uint8_t addr) const {
   return spi_driver_.xfer(CMD(addr), spi_response_size_, spi_transfer_speed_hz_);
 }
 
-const void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name) {
+void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
+                         const std::string &name) const {
   LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
@@ -365,7 +366,7 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   return crc;
 }
 
-void const Adis16448::printImuConfig() {
+void Adis16448::printImuConfig() {
   auto smpl_prd = readReg(SMPL_PRD);
   auto D        = smpl_prd[1] & 0b111111;
   LOG(I, "smpl_prd decimation rate variable D: " << +(D));
