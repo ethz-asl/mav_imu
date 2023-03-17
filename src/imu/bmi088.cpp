@@ -188,7 +188,7 @@ std::optional<vec3<double>> Bmi088::getAcceleration() {
 
 void Bmi088::usSleep(uint32_t period, void *intf_ptr) { usleep(period); }
 
-void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
+const void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
   if (rslt != BMI08_OK) {
     LOG(E, api_name.c_str() << "\t");
     if (rslt == BMI08_E_NULL_PTR) {
@@ -217,7 +217,7 @@ void Bmi088::printErrorCodeResults(const std::string &api_name, int8_t rslt) {
   }
 }
 
-void Bmi088::printGyroBw() {
+const void Bmi088::printGyroBw() {
   uint16_t bw = 0xFFFF;
   if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
     bw = 532;
@@ -244,7 +244,7 @@ void Bmi088::printGyroBw() {
   }
 }
 
-void Bmi088::printGyroOdr() {
+const void Bmi088::printGyroOdr() {
   uint16_t odr = 0xFFFF;
   if (dev_.gyro_cfg.bw == BMI08_GYRO_BW_532_ODR_2000_HZ) {
     odr = 2000;
@@ -302,7 +302,7 @@ uint16_t Bmi088::computeAccOdr(uint16_t accel_cfg_odr) {
   return acc_odr_min_ * (1 << (accel_cfg_odr - BMI08_ACCEL_ODR_12_5_HZ));
 }
 
-void Bmi088::printImuConfig() {
+const void Bmi088::printImuConfig() {
   int8_t rslt = bmi08g_get_meas_conf(&dev_);
   printErrorCodeResults("bmi08g_get_meas_conf", rslt);
 

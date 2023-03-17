@@ -35,7 +35,7 @@ class Bmi088 : public ImuInterface {
 
   *  @return void.
   */
-  void printImuConfig() override;
+  const void printImuConfig() override;
 
   /**
    * Custom burst mode
@@ -82,21 +82,21 @@ class Bmi088 : public ImuInterface {
   *
   *  @return void.
   */
-  void printErrorCodeResults(const std::string &api_name, int8_t rslt);
+  const void printErrorCodeResults(const std::string &api_name, int8_t rslt);
 
   /*!
   *  @brief Prints the gyro bandwidth setting.
 
   *  @return void.
   */
-  void printGyroBw();
+  const void printGyroBw();
 
   /*!
   *  @brief Prints the gyro output data rate setting.
 
   *  @return void.
   */
-  void printGyroOdr();
+  const void printGyroOdr();
 
   /*!
   *  @brief Computes the accelerometer range from settings.
