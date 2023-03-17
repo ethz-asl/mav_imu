@@ -36,9 +36,62 @@ Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
 bool Bmi088::selftest() {
   LOG(I, "Performing accelerometer selftest.");
   auto acc_rslt = bmi08xa_perform_selftest(&dev_);
+  printErrorCodeResults("bmi08xa_perform_selftest", acc_rslt);
   LOG(I, "Performing gyroscope selftest.");
   auto gyro_rslt = bmi08g_perform_selftest(&dev_);
+  printErrorCodeResults("bmi08g_perform_selftest", gyro_rslt);
   return (acc_rslt == BMI08_OK) && (gyro_rslt == BMI08_OK);
+}
+
+bool Bmi088::setupBmiSpi() {
+  // Soft reset.
+  auto rslt = bmi08a_soft_reset(&dev_);
+  printErrorCodeResults("bmi08a_soft_reset", rslt);
+  LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
+  if (rslt != BMI08_OK) { return false; }
+
+  // Initialize accelerometer SPI.
+  rslt        = bmi08xa_init(&dev_);
+  printErrorCodeResults("bmi08xa_init", rslt);
+  if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
+    LOG(E,
+        "Failed accelerometer SPI initialization. Chip id: 0x"
+            << std::hex << +dev_.accel_chip_id);
+    return false;
+  }
+  LOG(I,
+      "Accel SPI initialized. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
+
+  // Initialize gyroscope SPI.
+  rslt = bmi08g_init(&dev_);
+  printErrorCodeResults("bmi08g_init", rslt);
+  if (rslt != BMI08_OK || dev_.gyro_chip_id != BMI08_GYRO_CHIP_ID) {
+    LOG(E,
+        "Failed gyroscope SPI initialization. Chip id: 0x"
+            << std::hex << +dev_.gyro_chip_id);
+    return false;
+  }
+  LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
+
+  // General SPI configuration.
+  rslt = bmi08a_set_power_mode(&dev_);
+  printErrorCodeResults("bmi08a_set_power_mode", rslt);
+  if (rslt != BMI08_OK) { return false; }
+
+  rslt = bmi08g_set_power_mode(&dev_);
+  printErrorCodeResults("bmi08g_set_power_mode", rslt);
+  if (rslt != BMI08_OK) { return false; }
+
+  // TODO(rikba): Not sure if this step is required.
+  rslt = bmi08a_load_config_file(&dev_);
+  printErrorCodeResults("bmi08a_load_config_file", rslt);
+  if (rslt != BMI08_OK) { return false; }
+
+  rslt = bmi08xa_set_meas_conf(&dev_);
+  printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
+  if (rslt != BMI08_OK) { return false; }
+
+  return true;
 }
 
 bool Bmi088::init() {
@@ -63,55 +116,20 @@ bool Bmi088::init() {
     return false;
   }
 
-  // Initialize accelerometer SPI.
-  int8_t rslt = -1;
-  rslt        = bmi08xa_init(&dev_);
-  printErrorCodeResults("bmi08xa_init", rslt);
-  if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
-    LOG(E,
-        "Failed accelerometer SPI initialization. Chip id: 0x"
-            << std::hex << +dev_.accel_chip_id);
-    return false;
-  }
-  LOG(I,
-      "Accel SPI initialized. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
-
-  // Initialize gyroscope SPI.
-  rslt = bmi08g_init(&dev_);
-  printErrorCodeResults("bmi08g_init", rslt);
-  if (rslt != BMI08_OK || dev_.gyro_chip_id != BMI08_GYRO_CHIP_ID) {
-    LOG(E,
-        "Failed gyroscope SPI initialization. Chip id: 0x"
-            << std::hex << +dev_.gyro_chip_id);
-    return false;
-  }
-  LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
+  // Reset SPI communication.
+  if (!setupBmiSpi()) return false;
 
   // Self test.
   if (!selftest()) { return false; }
 
-  // Soft reset.
-  rslt = bmi08a_soft_reset(&dev_);
-  printErrorCodeResults("bmi08a_soft_reset", rslt);
-  LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
+  // Another reset recommended.
+  if (!setupBmiSpi()) return false;
 
-  // Configuration.
-  rslt = bmi08a_set_power_mode(&dev_);
-  printErrorCodeResults("bmi08a_set_power_mode", rslt);
-
-  rslt = bmi08g_set_power_mode(&dev_);
-  printErrorCodeResults("bmi08g_set_power_mode", rslt);
-
-  rslt = bmi08a_load_config_file(&dev_);
-  printErrorCodeResults("bmi08a_load_config_file", rslt);
-
-  rslt = bmi08xa_set_meas_conf(&dev_);
-  printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
-
+  // Re-configure data acquisition and filtering.
   bmi08_data_sync_cfg sync_cfg;
   // TODO(rikba): Expose sync_cfg setting to user.
-  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_1000HZ;
-  rslt          = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
+  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ;
+  auto rslt          = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 

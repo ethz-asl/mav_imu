@@ -43,7 +43,19 @@ class Bmi088 : public ImuInterface {
   ImuBurstResult burst() override;
 
  private:
+  /*!
+  *  @brief Calls the device self test function. A reset should be performed afterwards.
+
+  *  @return Success of selftest.
+  */
   bool selftest();
+
+  /*!
+  *  @brief Sets up the SPI communication with BMI after a reset.
+
+  *  @return Successful communication test.
+  */
+  bool setupBmiSpi();
 
   // Read function for BMI088 to be passed to BMI device driver.
   static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
