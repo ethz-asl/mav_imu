@@ -99,10 +99,9 @@ bool Bmi088::init() {
   if (!setupBmiSpi()) return false;
 
   // Re-configure data acquisition and filtering.
-  bmi08_data_sync_cfg sync_cfg;
   // TODO(rikba): Expose sync_cfg setting to user.
-  sync_cfg.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ;
-  auto rslt     = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
+  bmi08_data_sync_cfg sync_cfg{.mode = BMI08_ACCEL_DATA_SYNC_MODE_400HZ};
+  auto rslt = bmi08xa_configure_data_synchronization(sync_cfg, &dev_);
   printErrorCodeResults("bmi08a_configure_data_synchronization", rslt);
   LOG(I, "Configured IMU data synchronization.");
 
