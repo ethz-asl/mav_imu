@@ -280,7 +280,7 @@ double Bmi088::lsbToMps2(int16_t val, int8_t g_range) {
 }
 
 double Bmi088::lsbToRps(int16_t val, uint8_t dps_range) {
-  return (computeGyroRange(dps_range) / half_scale_) * (val) * (M_PI / 180.);
+  return ((val) * (M_PI / 180.) * computeGyroRange(dps_range)) / half_scale_;
 }
 
 uint8_t Bmi088::computeAccRange(uint8_t accel_cfg_range) {
