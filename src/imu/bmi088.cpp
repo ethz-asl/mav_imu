@@ -50,6 +50,11 @@ bool Bmi088::setupBmiSpi() {
   LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
   if (rslt != BMI08_OK) { return false; }
 
+  rslt = bmi08g_soft_reset(&dev_);
+  printErrorCodeResults("bmi08g_soft_reset", rslt);
+  LOG(I, rslt == BMI08_OK, "Gyroscope soft reset.");
+  if (rslt != BMI08_OK) { return false; }
+
   // General SPI configuration.
   rslt = bmi08a_set_power_mode(&dev_);
   printErrorCodeResults("bmi08a_set_power_mode", rslt);
