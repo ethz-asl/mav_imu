@@ -44,11 +44,7 @@ bool Bmi088::selftest() {
 }
 
 bool Bmi088::setupBmiSpi() {
-  // Soft reset.
-  auto rslt = bmi08a_soft_reset(&dev_);
-  printErrorCodeResults("bmi08a_soft_reset", rslt);
-  LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
-  if (rslt != BMI08_OK) { return false; }
+  int8_t rslt = -1;
 
   // Initialize accelerometer SPI.
   rslt = bmi08xa_init(&dev_);
@@ -72,6 +68,12 @@ bool Bmi088::setupBmiSpi() {
     return false;
   }
   LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
+
+  // Soft reset.
+  rslt = bmi08a_soft_reset(&dev_);
+  printErrorCodeResults("bmi08a_soft_reset", rslt);
+  LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
+  if (rslt != BMI08_OK) { return false; }
 
   // General SPI configuration.
   rslt = bmi08a_set_power_mode(&dev_);
