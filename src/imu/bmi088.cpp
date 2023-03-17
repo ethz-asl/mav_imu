@@ -9,8 +9,7 @@
 #include <string>
 
 Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
-    : acc_spi_driver_(std::move(acc_path)),
-      gyro_spi_driver_(std::move(gyro_path)) {
+    : acc_spi_driver_(std::move(acc_path)), gyro_spi_driver_(std::move(gyro_path)) {
   // Communication.
   dev_.intf_ptr_accel = &acc_spi_driver_;
   dev_.intf_ptr_gyro  = &gyro_spi_driver_;
@@ -51,20 +50,16 @@ bool Bmi088::setupBmiSpi() {
   printErrorCodeResults("bmi08xa_init", rslt);
   if (rslt != BMI08_OK || dev_.accel_chip_id != BMI088_ACCEL_CHIP_ID) {
     LOG(E,
-        "Failed accelerometer SPI initialization. Chip id: 0x"
-            << std::hex << +dev_.accel_chip_id);
+        "Failed accelerometer SPI initialization. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
     return false;
   }
-  LOG(I,
-      "Accel SPI initialized. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
+  LOG(I, "Accel SPI initialized. Chip id: 0x" << std::hex << +dev_.accel_chip_id);
 
   // Initialize gyroscope SPI.
   rslt = bmi08g_init(&dev_);
   printErrorCodeResults("bmi08g_init", rslt);
   if (rslt != BMI08_OK || dev_.gyro_chip_id != BMI08_GYRO_CHIP_ID) {
-    LOG(E,
-        "Failed gyroscope SPI initialization. Chip id: 0x"
-            << std::hex << +dev_.gyro_chip_id);
+    LOG(E, "Failed gyroscope SPI initialization. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
     return false;
   }
   LOG(I, "Gyro SPI initialized. Chip id: 0x" << std::hex << +dev_.gyro_chip_id);
@@ -138,35 +133,31 @@ bool Bmi088::init() {
   /*set accel interrupt pin configuration*/
   /*configure host data ready interrupt */
   bmi08_int_cfg int_config;
-  int_config.accel_int_config_1.int_channel = BMI08_INT_CHANNEL_1;
-  int_config.accel_int_config_1.int_type    = BMI08_ACCEL_SYNC_INPUT;
-  int_config.accel_int_config_1.int_pin_cfg.output_mode =
-      BMI08_INT_MODE_PUSH_PULL;
-  int_config.accel_int_config_1.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.accel_int_config_1.int_channel                = BMI08_INT_CHANNEL_1;
+  int_config.accel_int_config_1.int_type                   = BMI08_ACCEL_SYNC_INPUT;
+  int_config.accel_int_config_1.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
+  int_config.accel_int_config_1.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
   int_config.accel_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
 
   /*configure Accel syncronization input interrupt pin */
-  int_config.accel_int_config_2.int_channel = BMI08_INT_CHANNEL_2;
-  int_config.accel_int_config_2.int_type    = BMI08_ACCEL_INT_SYNC_DATA_RDY;
-  int_config.accel_int_config_2.int_pin_cfg.output_mode =
-      BMI08_INT_MODE_PUSH_PULL;
-  int_config.accel_int_config_2.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
+  int_config.accel_int_config_2.int_channel                = BMI08_INT_CHANNEL_2;
+  int_config.accel_int_config_2.int_type                   = BMI08_ACCEL_INT_SYNC_DATA_RDY;
+  int_config.accel_int_config_2.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
+  int_config.accel_int_config_2.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
   int_config.accel_int_config_2.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
 
   /*set gyro interrupt pin configuration*/
-  int_config.gyro_int_config_1.int_channel = BMI08_INT_CHANNEL_3;
-  int_config.gyro_int_config_1.int_type    = BMI08_GYRO_INT_DATA_RDY;
+  int_config.gyro_int_config_1.int_channel                = BMI08_INT_CHANNEL_3;
+  int_config.gyro_int_config_1.int_type                   = BMI08_GYRO_INT_DATA_RDY;
   int_config.gyro_int_config_1.int_pin_cfg.enable_int_pin = BMI08_ENABLE;
-  int_config.gyro_int_config_1.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
-  int_config.gyro_int_config_1.int_pin_cfg.output_mode =
-      BMI08_INT_MODE_PUSH_PULL;
+  int_config.gyro_int_config_1.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
+  int_config.gyro_int_config_1.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
 
-  int_config.gyro_int_config_2.int_channel = BMI08_INT_CHANNEL_4;
-  int_config.gyro_int_config_2.int_type    = BMI08_GYRO_INT_DATA_RDY;
+  int_config.gyro_int_config_2.int_channel                = BMI08_INT_CHANNEL_4;
+  int_config.gyro_int_config_2.int_type                   = BMI08_GYRO_INT_DATA_RDY;
   int_config.gyro_int_config_2.int_pin_cfg.enable_int_pin = BMI08_DISABLE;
-  int_config.gyro_int_config_2.int_pin_cfg.lvl = BMI08_INT_ACTIVE_HIGH;
-  int_config.gyro_int_config_2.int_pin_cfg.output_mode =
-      BMI08_INT_MODE_PUSH_PULL;
+  int_config.gyro_int_config_2.int_pin_cfg.lvl            = BMI08_INT_ACTIVE_HIGH;
+  int_config.gyro_int_config_2.int_pin_cfg.output_mode    = BMI08_INT_MODE_PUSH_PULL;
 
   /* Enable synchronization interrupt pin */
   rslt = bmi08a_set_data_sync_int_config(&int_config, &dev_);
@@ -174,24 +165,17 @@ bool Bmi088::init() {
   return true;
 }
 
-bool Bmi088::close() {
-  return acc_spi_driver_.close() && gyro_spi_driver_.close();
-}
+bool Bmi088::close() { return acc_spi_driver_.close() && gyro_spi_driver_.close(); }
 
-int Bmi088::getRaw(std::vector<byte> cmd) {
-  LOG(E, "Bmi088 getRaw not implemented.");
-}
+int Bmi088::getRaw(std::vector<byte> cmd) { LOG(E, "Bmi088 getRaw not implemented."); }
 
-int8_t Bmi088::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
-                       void *intf_ptr) {
-  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len,
-                                                      spi_transfer_speed_hz_);
+int8_t Bmi088::readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr) {
+  auto res = static_cast<SpiDriver *>(intf_ptr)->xfer({reg_addr}, len, spi_transfer_speed_hz_);
   std::copy(res.begin(), res.end(), reg_data);
   return res.empty() ? BMI08_E_COM_FAIL : BMI08_OK;
 }
 
-int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-                        void *intf_ptr) {
+int8_t Bmi088::writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr) {
   std::vector<uint8_t> req = {reg_addr};
   std::copy(&reg_data[0], &reg_data[len], std::back_inserter(req));
   // TODO(rikba): Implement IOCT error.
@@ -205,10 +189,9 @@ std::optional<vec3<double>> Bmi088::getGyro() {
   printErrorCodeResults("bmi08g_get_data", rslt);
 
   if (rslt == BMI08_OK) {
-    return vec3<double>(
-        {lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+    return vec3<double>({lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+                         lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+                         lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
   } else {
     return std::nullopt;
   }
@@ -220,10 +203,9 @@ std::optional<vec3<double>> Bmi088::getAcceleration() {
   printErrorCodeResults("bmi08a_get_data", rslt);
 
   if (rslt == BMI08_OK) {
-    return vec3<double>(
-        {lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
+    return vec3<double>({lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+                         lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+                         lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
   } else {
     return std::nullopt;
   }
@@ -352,9 +334,7 @@ void Bmi088::printImuConfig() {
   rslt = bmi08a_get_meas_conf(&dev_);
   printErrorCodeResults("bmi08a_get_meas_conf", rslt);
 
-  LOG(I,
-      "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range)
-                          << " m/s^2");
+  LOG(I, "accel_cfg.range: " << +computeAccRange(dev_.accel_cfg.range) << " m/s^2");
   LOG(I, "accel_cfg.bw (OSR):" << +computeAccBw(dev_.accel_cfg.bw));
   LOG(I, "accel_cfg.odr: " << computeAccOdr(dev_.accel_cfg.odr) << " Hz");
   LOG(I, "gyro_cfg.range: " << computeGyroRange(dev_.gyro_cfg.range) << " dps");
@@ -372,14 +352,13 @@ ImuBurstResult Bmi088::burst() {
   printErrorCodeResults("bmi08a_get_synchronized_data", rslt);
 
   if (rslt == BMI08_OK) {
-    ret.acceleration = vec3<double>(
-        {lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
-    ret.gyro = vec3<double>(
-        {lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
-         lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
+    ret.acceleration =
+        vec3<double>({lsbToMps2(acc.x, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+                      lsbToMps2(acc.y, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION),
+                      lsbToMps2(acc.z, dev_.accel_cfg.range, BMI08_16_BIT_RESOLUTION)});
+    ret.gyro = vec3<double>({lsbToRps(gyro.x, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+                             lsbToRps(gyro.y, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION),
+                             lsbToRps(gyro.z, dev_.gyro_cfg.range, BMI08_16_BIT_RESOLUTION)});
   }
 
   return ret;

@@ -76,17 +76,13 @@ bool Adis16448::init() {
 }
 
 std::vector<byte> Adis16448::readReg(const uint8_t addr) {
-  return spi_driver_.xfer(CMD(addr), spi_response_size_,
-                          spi_transfer_speed_hz_);
+  return spi_driver_.xfer(CMD(addr), spi_response_size_, spi_transfer_speed_hz_);
 }
 
-void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
-                         const std::string &name) {
+void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name) {
   // TODO(rikba): I don't know how to do hex formatting with lpp. Replace comma
   // with two digit hex
-  LOG(I,
-      std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x"
-               << +data[1]);
+  LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
@@ -223,8 +219,7 @@ double Adis16448::convertTemperature(const std::vector<byte> &word) {
 }
 
 int Adis16448::getRaw(std::vector<byte> cmd) {
-  std::vector<byte> res =
-      spi_driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
+  std::vector<byte> res = spi_driver_.xfer(cmd, spi_response_size_, spi_transfer_speed_hz_);
   return unsignedWordToInt(res);
 }
 
@@ -267,9 +262,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
       return true;
     }
 
-    LOG(E,
-        "Error on burst mode disable: " << (int) res[0] << ", "
-                                        << (int) res[1]);
+    LOG(E, "Error on burst mode disable: " << (int) res[0] << ", " << (int) res[1]);
     return false;
   }
 }
@@ -284,9 +277,8 @@ ImuBurstResult Adis16448::burst() {
     // it is normal to have occasional checksum errors
     if (crc_error_count_ >= 5) {
       LOG_TIMED(E, 1,
-                "DANGER: Last "
-                    << crc_error_count_
-                    << " crc checks failed. Possible connection loss.");
+                "DANGER: Last " << crc_error_count_
+                                << " crc checks failed. Possible connection loss.");
     } else {
       LOG_EVERY(W, 1000, "Reported occasional checksum errors.");
     }
@@ -330,8 +322,7 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
   int count = 0;
 
   for (int i = 0; i < 24; i += 2) {
-    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt(
-        {burstData[i], burstData[i + 1]});
+    uint16_t a          = (uint16_t) Adis16448::unsignedWordToInt({burstData[i], burstData[i + 1]});
     sampleAsWord[count] = a;
     count++;
   }
@@ -350,7 +341,7 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   unsigned int upperByte; // Upper Byte of burstData word
   unsigned int POLY;      // Divisor used during CRC computation
   POLY = 0x1021;          // Define divisor
-  crc = 0xFFFF; // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
+  crc  = 0xFFFF;          // Set CRC to \f1\u8208?\f0 1 prior to beginning CRC computation
   // Compute CRC on burst data starting from XGYRO_OUT and ending with TEMP_OUT.
   // Start with the lower byte and then the upper byte of each word.
   // i.e. Compute XGYRO_OUT_LSB CRC first and then compute XGYRO_OUT_MSB CRC.
@@ -372,8 +363,7 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   }
   crc  = ~crc; // Compute complement of CRC\par
   data = crc;
-  crc  = (crc << 8)
-      | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
+  crc  = (crc << 8) | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
   return crc;
 }
 

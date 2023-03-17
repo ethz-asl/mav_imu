@@ -58,12 +58,10 @@ class Bmi088 : public ImuInterface {
   bool setupBmiSpi();
 
   // Read function for BMI088 to be passed to BMI device driver.
-  static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
-                        void *intf_ptr);
+  static int8_t readReg(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
 
   // Write function for BMI088 to be passed to BMI device driver.
-  static int8_t writeReg(uint8_t reg_addr, const uint8_t *reg_data,
-                         uint32_t len, void *intf_ptr);
+  static int8_t writeReg(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr);
 
   /*!
   *  @brief Sleep ms function for BMI088 to be passed to BMI device driver.

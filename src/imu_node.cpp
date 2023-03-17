@@ -5,8 +5,7 @@
 #include <log++.h>
 #include <ros/ros.h>
 
-ImuNode::ImuNode(ImuInterface &imu, int frequency)
-    : imu_interface_(imu), frequency_(frequency) {
+ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), frequency_(frequency) {
   ros::NodeHandle nh;
   imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
   imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);

@@ -15,7 +15,7 @@
  * @return initialized imu interface on success, otherwise nullptr
  */
 ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
-                                          const std::string &spi_path) {
+                                            const std::string &spi_path) {
   LOG(I, "Imu type: " << imu_name);
   if (imu_name == "adis16448") {
 
@@ -38,9 +38,8 @@ ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
       gyro_path = spi_path.substr(0, spi_path.length() - 1) + '0';
     }
     LOG(I,
-        "Opening BMI088 with accelerometer CS \""
-            << spi_path.c_str() << "\" and gyroscope CS \"" << gyro_path.c_str()
-            << "\".");
+        "Opening BMI088 with accelerometer CS \"" << spi_path.c_str() << "\" and gyroscope CS \""
+                                                  << gyro_path.c_str() << "\".");
     auto bmi = std::make_shared<Bmi088>(spi_path, gyro_path);
 
     if (bmi->init()) { return bmi; }

@@ -79,8 +79,7 @@ class Adis16448 : public ImuInterface {
   /**
    * Helper function to overwrite a registry entry.
    */
-  void writeReg(uint8_t addr, const std::vector<byte> &data,
-                const std::string &name);
+  void writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name);
 
   /**
    * Run a test read sequence for SPI communcation.
