@@ -4,6 +4,7 @@
 #include "imu_interface.h"
 #include "spi_driver.h"
 #include <bmi08_defs.h>
+#include <bmi08x.h>
 #include <optional>
 #include <string>
 
@@ -151,7 +152,26 @@ class Bmi088 : public ImuInterface {
 
   SpiDriver acc_spi_driver_;
   SpiDriver gyro_spi_driver_;
-  bmi08_dev dev_;
+  /*!
+  *  @brief BMI device with communication settings and IMU configuration. The configuration will be overwritten in initialization method.
+  */
+  bmi08_dev dev_{// Communication.
+                 .intf_ptr_accel = &acc_spi_driver_,
+                 .intf_ptr_gyro  = &gyro_spi_driver_,
+                 .intf           = BMI08_SPI_INTF,
+                 .variant        = BMI088_VARIANT,
+                 .accel_cfg      = bmi08_cfg{.power = BMI08_ACCEL_PM_ACTIVE,
+                                             .range = BMI088_ACCEL_RANGE_24G,
+                                             .bw    = BMI08_ACCEL_BW_NORMAL,
+                                             .odr   = BMI08_ACCEL_ODR_1600_HZ},
+                 .gyro_cfg       = bmi08_cfg{.power = BMI08_GYRO_PM_NORMAL,
+                                             .range = BMI08_GYRO_RANGE_2000_DPS,
+                                             .bw    = BMI08_GYRO_BW_532_ODR_2000_HZ,
+                                             .odr   = BMI08_GYRO_BW_532_ODR_2000_HZ},
+                 .read_write_len = 32,
+                 .read           = &(Bmi088::readReg),
+                 .write          = &(Bmi088::writeReg),
+                 .delay_us       = &(Bmi088::usSleep)};
 
   inline static const constexpr uint32_t spi_transfer_speed_hz_ = 10000000;
   inline static const constexpr uint8_t g_range_min_            = 3;

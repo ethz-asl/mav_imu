@@ -1,7 +1,6 @@
 #include "imu/bmi088.h"
 
 #include <algorithm>
-#include <bmi08x.h>
 #include <cmath>
 #include <iostream>
 #include <linux/spi/spidev.h>
@@ -9,28 +8,7 @@
 #include <string>
 
 Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
-    : acc_spi_driver_(std::move(acc_path)), gyro_spi_driver_(std::move(gyro_path)) {
-  // Communication.
-  dev_.intf_ptr_accel = &acc_spi_driver_;
-  dev_.intf_ptr_gyro  = &gyro_spi_driver_;
-  dev_.intf           = BMI08_SPI_INTF;
-  dev_.variant        = BMI088_VARIANT;
-  dev_.read_write_len = 32;
-  dev_.read           = &(Bmi088::readReg);
-  dev_.write          = &(Bmi088::writeReg);
-  dev_.delay_us       = &(Bmi088::usSleep);
-
-  // Default configuration. (These values are overwritten in configuration process.)
-  dev_.accel_cfg.power = BMI08_ACCEL_PM_ACTIVE;
-  dev_.accel_cfg.range = BMI088_ACCEL_RANGE_24G;
-  dev_.accel_cfg.bw    = BMI08_ACCEL_BW_NORMAL;
-  dev_.accel_cfg.odr   = BMI08_ACCEL_ODR_1600_HZ;
-
-  dev_.gyro_cfg.power = BMI08_GYRO_PM_NORMAL;
-  dev_.gyro_cfg.range = BMI08_GYRO_RANGE_2000_DPS;
-  dev_.gyro_cfg.bw    = BMI08_GYRO_BW_532_ODR_2000_HZ;
-  dev_.gyro_cfg.odr   = BMI08_GYRO_BW_532_ODR_2000_HZ;
-}
+    : acc_spi_driver_(std::move(acc_path)), gyro_spi_driver_(std::move(gyro_path)) {}
 
 bool Bmi088::selftest() {
   LOG(I, "Performing accelerometer selftest.");
