@@ -13,7 +13,7 @@ $ git clone git@github.com:ethz-asl/lpp.git
 
 2. Go to the catkin workspace and clone this repo in the `src` folder and build it with
 ```shell
-$ git clone git@github.com:ethz-asl/mav_imu.git
+$ git clone --recurse-submodules git@github.com:ethz-asl/mav_imu.git
 $ catkin build mav_imu
 ```
 3. Source environment
