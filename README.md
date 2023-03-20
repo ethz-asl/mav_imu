@@ -41,7 +41,7 @@ $ rosrun imu_madgwick_filter imu_filter_node
 ```
 
 5. Example BMI088 and Jetson Xavier NX
-- Connect BMI088 to 40 pin header according to ![schematics](docs/Connection_BMI088_to_Jetson_Xavier_NX.pdf)
+- Connect BMI088 to 40 pin header according to [schematics](docs/Connection_BMI088_to_Jetson_Xavier_NX.pdf)
 ```
 roslaunch mav_imu imu.launch imu:=bmi088 spi_path:=/dev/spidev0.0
 ```
