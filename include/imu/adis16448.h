@@ -12,7 +12,7 @@ class Adis16448 : public ImuInterface {
  public:
   /**
    * Adis16448 Constructor
-   * @param path to spidev e.g. /dev/spidev0.1
+   * @param path to spidev, e.g., "/dev/spidev0.1".
    */
   explicit Adis16448(const std::string &path);
 
@@ -27,8 +27,6 @@ class Adis16448 : public ImuInterface {
    * @return true if successful, otherwise false
    */
   bool setBurstCRCEnabled(bool b);
-
-  bool selftest() override;
   bool init() override;
   std::optional<vec3<double>> getGyro() override;
   std::optional<vec3<double>> getAcceleration() override;
@@ -50,6 +48,13 @@ class Adis16448 : public ImuInterface {
    */
   ImuBurstResult burst() override;
 
+  /*!
+  *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
+
+  *  @return void.
+  */
+  void printImuConfig() override;
+
   /**
    * Free file descriptor
    * @return true if successful, otherwise false and errno is set.
@@ -64,16 +69,17 @@ class Adis16448 : public ImuInterface {
   static unsigned short int runCRC(const uint16_t burstData[]);
   static inline const constexpr int DEFAULT_BURST_LEN = 24;
 
+  bool selftest();
+
   /**
    * Helper function to read a registry entry.
    */
-  std::vector<byte> readReg(uint8_t addr);
+  std::vector<byte> readReg(uint8_t addr) const;
 
   /**
    * Helper function to overwrite a registry entry.
    */
-  void writeReg(uint8_t addr, const std::vector<byte> &data,
-                const std::string &name);
+  void writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name) const;
 
   /**
    * Run a test read sequence for SPI communcation.
@@ -111,7 +117,6 @@ class Adis16448 : public ImuInterface {
    * @return
    */
   static double convertTemperature(const std::vector<byte> &word);
-
 
   /**
    * Resets the Imu and turns the LED off.

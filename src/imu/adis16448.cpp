@@ -37,6 +37,9 @@ bool Adis16448::init() {
     return false;
   }
 
+  // Selftest
+  if (!selftest()) { return false; }
+
   // Software reset.
   softwareReset();
 
@@ -72,23 +75,21 @@ bool Adis16448::init() {
   return true;
 }
 
-std::vector<byte> Adis16448::readReg(const uint8_t addr) {
+std::vector<byte> Adis16448::readReg(const uint8_t addr) const {
   return spi_driver_.xfer(CMD(addr), spi_response_size_, spi_transfer_speed_hz_);
 }
 
 void Adis16448::writeReg(uint8_t addr, const std::vector<byte> &data,
-                         const std::string &name) {
-  // TODO(rikba): I don't know how to do hex formatting with lpp. Replace comma
-  // with two digit hex
+                         const std::string &name) const {
   LOG(I, std::hex << "Adis16448 " << name.c_str() << ": 0x" << +data[0] << ", 0x" << +data[1]);
   // Set MSB
   addr = (addr & 0x7F) | 0x80;
   // Send low word.
-  spi_driver_.xfer({addr, data[1]}, 0, spi_transfer_speed_hz_);
+  auto ret = spi_driver_.xfer({addr, data[1]}, 0, spi_transfer_speed_hz_);
   // Increment address.
   addr = (addr | 0x1);
   // Send high word.
-  spi_driver_.xfer({addr, data[0]}, 0, spi_transfer_speed_hz_);
+  ret = spi_driver_.xfer({addr, data[0]}, 0, spi_transfer_speed_hz_);
 }
 
 bool Adis16448::selftest() {
@@ -106,9 +107,7 @@ bool Adis16448::selftest() {
 
   std::vector<byte> res = readReg(DIAG_STAT);
 
-  if (res.empty()) {
-    return false;
-  }
+  if (res.empty()) { return false; }
 
   if (res[1] & (1 << 5)) {
     LOG(E, "ADIS16448 self-test failed.");
@@ -131,9 +130,7 @@ bool Adis16448::selftest() {
 bool Adis16448::testSPI() {
   auto res = readReg(PROD_ID);
 
-  if (res.empty()) {
-    return false;
-  }
+  if (res.empty()) { return false; }
 
   LOG(I, std::hex << "Adis16448 PROD_ID: 0x" << +res[0] << +res[1]);
 
@@ -180,7 +177,7 @@ std::optional<vec3<double>> Adis16448::getAcceleration() {
 
 vec3<double> Adis16448::convertAcceleration(vec3<double> accel) {
   accel /= 1200.; // Convert to g
-  return accel * 9.80665;
+  return accel * g_;
 }
 
 std::optional<vec3<double>> Adis16448::getMagnetometer() {
@@ -264,8 +261,7 @@ bool Adis16448::setBurstCRCEnabled(bool b) {
       return true;
     }
 
-    LOG(E,
-        "Error on burst mode disable: " << (int) res[0] << ", " << (int) res[1]);
+    LOG(E, "Error on burst mode disable: " << (int) res[0] << ", " << (int) res[1]);
     return false;
   }
 }
@@ -280,9 +276,8 @@ ImuBurstResult Adis16448::burst() {
     // it is normal to have occasional checksum errors
     if (crc_error_count_ >= 5) {
       LOG_TIMED(E, 1,
-                "DANGER: Last "
-                    << crc_error_count_
-                    << " crc checks failed. Possible connection loss.");
+                "DANGER: Last " << crc_error_count_
+                                << " crc checks failed. Possible connection loss.");
     } else {
       LOG_EVERY(W, 1000, "Reported occasional checksum errors.");
     }
@@ -317,9 +312,7 @@ ImuBurstResult Adis16448::burst() {
 }
 
 bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
-  if (burstData.size() != DEFAULT_BURST_LEN + 2) {
-    return false;
-  }
+  if (burstData.size() != DEFAULT_BURST_LEN + 2) { return false; }
 
   int expected_crc = unsignedWordToInt({burstData[24], burstData[25]});
   uint16_t sampleAsWord[12];
@@ -328,7 +321,7 @@ bool Adis16448::validateCrc(const std::vector<byte> &burstData) {
   int count = 0;
 
   for (int i = 0; i < 24; i += 2) {
-    uint16_t a = (uint16_t) Adis16448::unsignedWordToInt({burstData[i], burstData[i + 1]});
+    uint16_t a          = (uint16_t) Adis16448::unsignedWordToInt({burstData[i], burstData[i + 1]});
     sampleAsWord[count] = a;
     count++;
   }
@@ -356,15 +349,13 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
     lowerByte = (burstData[i] & 0xFF);
     data      = lowerByte; // Compute lower byte CRC first
     for (ii = 0; ii < 8; ii++, data >>= 1) {
-      if ((crc & 0x0001) ^ (data & 0x0001))
-        crc = (crc >> 1) ^ POLY;
+      if ((crc & 0x0001) ^ (data & 0x0001)) crc = (crc >> 1) ^ POLY;
       else
         crc >>= 1;
     }
     data = upperByte; // Compute upper byte of CRC
     for (ii = 0; ii < 8; ii++, data >>= 1) {
-      if ((crc & 0x0001) ^ (data & 0x0001))
-        crc = (crc >> 1) ^ POLY;
+      if ((crc & 0x0001) ^ (data & 0x0001)) crc = (crc >> 1) ^ POLY;
       else
         crc >>= 1;
     }
@@ -373,4 +364,19 @@ unsigned short int Adis16448::runCRC(const uint16_t burstData[]) {
   data = crc;
   crc  = (crc << 8) | (data >> 8 & 0xFF); // Perform byte swap prior to returning CRC\par
   return crc;
+}
+
+void Adis16448::printImuConfig() {
+  auto smpl_prd = readReg(SMPL_PRD);
+  auto D        = smpl_prd[1] & 0b111111;
+  LOG(I, "smpl_prd decimation rate variable D: " << +(D));
+  LOG(I, "Output data rate (ODR): " << 819.2 / (1 << D) << " Hz");
+
+  auto sens_avg = readReg(SENS_AVG);
+  auto B        = sens_avg[0] & 0b111;
+  LOG(I, "sens_avg filter size variable B: " << +(B));
+  LOG(I, "Bartlett windows size: " << (1 << B));
+
+  auto gyro_range = sens_avg[1] & 0b111;
+  LOG(I, "sens_avg gyro range: " << 250 * (1 << (gyro_range - 1)) << " dps");
 }

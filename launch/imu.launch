@@ -1,6 +1,6 @@
 <launch>
-<arg name="imu" default="adis16448" doc="The IMU model."/>
-<arg name="spi_path" default="/dev/spidev0.1" doc="The SPI directory."/>
+<arg name="imu" default="adis16448" doc="The IMU model (adis16448 or bmi088)."/>
+<arg name="spi_path" default="/dev/spidev0.1" doc="The SPI directory, where the first digit is the SPI port and the second digit is the chip select number."/>
 <arg name="frequency" default="200" doc="The IMU sample frequency."/> 
 <arg name="launch-prefix" default="" doc="Start nodes with launch-prefix."/>
 <arg name="output" default="screen" doc="Logging directory."/>

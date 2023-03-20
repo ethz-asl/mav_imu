@@ -19,13 +19,22 @@ catkin_package(
 
 include_directories(
         include
+        lib/BMI08x-Sensor-API
         ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}
         src/spi_driver.cpp
         src/imu_node.cpp
         src/imu/adis16448.cpp
+        src/imu/bmi088.cpp
         src/imu/ImuFactory.cpp)
+
+# Bosch API
+add_library(${PROJECT_NAME}_BMI08x
+        lib/BMI08x-Sensor-API/bmi08a.c
+        lib/BMI08x-Sensor-API/bmi08g.c
+        lib/BMI08x-Sensor-API/bmi08xa.c)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMI08x)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

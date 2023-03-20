@@ -1,6 +1,6 @@
 # mav_imu
 
-Userspace driver for adis16448 written in C++17.
+Userspace driver for adis16448 and BMI088 written in C++17.
 
 ## Setup
 
@@ -13,7 +13,7 @@ $ git clone git@github.com:ethz-asl/lpp.git
 
 2. Go to the catkin workspace and clone this repo in the `src` folder and build it with
 ```shell
-$ git clone git@github.com:ethz-asl/mav_imu.git
+$ git clone --recurse-submodules git@github.com:ethz-asl/mav_imu.git
 $ catkin build mav_imu
 ```
 3. Source environment
@@ -38,6 +38,12 @@ $ roslaunch mav_imu imu_rviz.launch
 
 ```shell
 $ rosrun imu_madgwick_filter imu_filter_node
+```
+
+5. Example BMI088 and Jetson Xavier NX
+- Connect BMI088 to 40 pin header according to ![schematics](docs/Connection_BMI088_to_Jetson_Xavier_NX.pdf)
+```
+roslaunch mav_imu imu.launch imu:=bmi088 spi_path:=/dev/spidev0.0
 ```
 
 ***

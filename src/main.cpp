@@ -34,11 +34,6 @@ int main(int argc, char **argv) {
   ImuNode node{*imu_interface, frequency};
 
   signal(SIGINT, SignalHandler);
-
-  if (!node.init()) {
-    LOG(F, "Node init failed.");
-    return -1;
-  }
   node.run();
   return 0;
 }

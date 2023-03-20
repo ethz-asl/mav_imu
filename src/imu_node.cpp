@@ -5,8 +5,7 @@
 #include <log++.h>
 #include <ros/ros.h>
 
-ImuNode::ImuNode(ImuInterface &imu, int frequency)
-    : imu_interface_(imu), frequency_(frequency) {
+ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), frequency_(frequency) {
   ros::NodeHandle nh;
   imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
   imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
@@ -14,16 +13,9 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency)
   imu_baro_pub_     = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
 }
 
-bool ImuNode::init() {
-  if (!imu_interface_.selftest()) {
-    return true;
-  }
-  LOG(I, "Imu Node initalized.");
-  return true;
-}
-
 int ImuNode::run() {
   LOG(I, "Node started");
+  imu_interface_.printImuConfig();
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(frequency_);
 
