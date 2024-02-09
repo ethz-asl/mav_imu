@@ -50,6 +50,11 @@ bool Bmi088::setupBmiSpi() {
   LOG(I, rslt == BMI08_OK, "Accelerometer soft reset.");
   if (rslt != BMI08_OK) { return false; }
 
+ // Issue #19 (YR0th - Yann Roth) This block needs to be here for config to load correctly
+ // https://community.bosch-sensortec.com/t5/MEMS-sensors-forum/BMI088-accelerometer-noise-too-high/td-p/57674
+  rslt = bmi08a_load_config_file(&dev_);
+  printErrorCodeResults("bmi08a_load_config_file", rslt);
+  if (rslt != BMI08_OK) { return false; }
   rslt = bmi08g_soft_reset(&dev_);
   printErrorCodeResults("bmi08g_soft_reset", rslt);
   LOG(I, rslt == BMI08_OK, "Gyroscope soft reset.");
@@ -64,10 +69,7 @@ bool Bmi088::setupBmiSpi() {
   printErrorCodeResults("bmi08g_set_power_mode", rslt);
   if (rslt != BMI08_OK) { return false; }
 
-  // TODO(rikba): Not sure if this step is required.
-  rslt = bmi08a_load_config_file(&dev_);
-  printErrorCodeResults("bmi08a_load_config_file", rslt);
-  if (rslt != BMI08_OK) { return false; }
+ 
 
   rslt = bmi08xa_set_meas_conf(&dev_);
   printErrorCodeResults("bmi08xa_set_meas_conf", rslt);
