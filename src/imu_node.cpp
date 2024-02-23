@@ -57,3 +57,35 @@ void ImuNode::processImuData() {
     imu_data_raw_pub_->publish(msg);
   }
 }
+
+void ImuNode::processMagneticFieldData() {
+  if (imu_burst_result_.magnetometer.has_value()) {
+    sensor_msgs::msg::MagneticField mag_msg;
+    mag_msg.header.stamp = time_now_;
+    mag_msg.magnetic_field.x = imu_burst_result_.magnetometer.value().x;
+    mag_msg.magnetic_field.y = imu_burst_result_.magnetometer.value().y;
+    mag_msg.magnetic_field.z = imu_burst_result_.magnetometer.value().z;
+    imu_mag_pub_->publish(mag_msg);
+  }
+}
+
+void ImuNode::processTemperature() {
+  if (imu_burst_result_.temp.has_value()) {
+    sensor_msgs::msg::Temperature temp_msg;
+    temp_msg.header.stamp = time_now_;
+    temp_msg.temperature  = imu_burst_result_.temp.value();
+    temp_msg.variance     = 0;
+    imu_temp_pub_->publish(temp_msg);
+  }
+}
+
+void ImuNode::processFluidpressure() {
+  if (imu_burst_result_.baro.has_value()) {
+    sensor_msgs::msg::FluidPressure pressure_msg;
+    pressure_msg.header.stamp = time_now_;
+    // Ros takes fluid pressure in Pa. Convert hPa to Pa.
+    pressure_msg.fluid_pressure = imu_burst_result_.baro.value() * 100;
+    pressure_msg.variance       = 0;
+    imu_baro_pub_->publish(pressure_msg);
+  }
+}
