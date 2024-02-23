@@ -17,9 +17,9 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
 
   auto ros_node = std::make_shared<rclcpp::Node>("mav_imu_node");
-  std::string spi_path = ros_node->declare_parameter("spi_path", "/dev/spidev0.1");
+  std::string spi_path = ros_node->declare_parameter("spi_path", "/dev/spidev0.0");
   int frequency = ros_node->declare_parameter("frequency", 200);
-  std::string imu_name = ros_node->declare_parameter("imu", "adis16448");
+  std::string imu_name = ros_node->declare_parameter("imu", "bmi088");
 
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
