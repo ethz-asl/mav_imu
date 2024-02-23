@@ -16,10 +16,10 @@ int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<rclcpp::Node>("mav_imu_node");
-  std::string spi_path = node->declare_parameter("spi_path", "/dev/spidev0.1").as_string();
-  int frequency = node->declare_parameter("frequency", 200).as_int();
-  std::string imu_name = node->declare_parameter("imu", "adis16448").as_string();
+  auto ros_node = std::make_shared<rclcpp::Node>("mav_imu_node");
+  std::string spi_path = ros_node->declare_parameter("spi_path", "/dev/spidev0.1");
+  int frequency = ros_node->declare_parameter("frequency", 200);
+  std::string imu_name = ros_node->declare_parameter("imu", "adis16448");
 
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
@@ -32,8 +32,7 @@ int main(int argc, char **argv) {
 
   ImuNode node{*imu_interface, frequency};
 
-  rclcpp::shutdown_on_interrupt();
-  rclcpp::spin(node);
+  rclcpp::spin(ros_node);
   rclcpp::shutdown();
   return 0;
 }

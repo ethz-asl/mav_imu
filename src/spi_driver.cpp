@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
+#include <climits>
 
 SpiDriver::SpiDriver(std::string path) : path_(std::move(path)) {}
 

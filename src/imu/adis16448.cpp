@@ -10,6 +10,11 @@
 #include <log++.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <climits>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 

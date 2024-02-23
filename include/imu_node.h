@@ -32,5 +32,11 @@ class ImuNode : public rclcpp::Node {
   rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr imu_mag_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr imu_temp_pub_;
   rclcpp::Publisher<sensor_msgs::msg::FluidPressure>::SharedPtr imu_baro_pub_;
+
+  ImuInterface &imu_interface_;
+  int frequency_;
+
+  rclcpp::Time time_now_;
+  struct ImuBurstResult imu_burst_result_;
 };
 #endif  // MAV_IMU__IMU_TEST_H_
