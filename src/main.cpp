@@ -32,6 +32,9 @@ int main(int argc, char **argv) {
 
   ImuNode node{*imu_interface, frequency};
 
+  signal(SIGINT, SignalHandler);
+  node.run();
+
   rclcpp::spin(ros_node);
   rclcpp::shutdown();
   return 0;

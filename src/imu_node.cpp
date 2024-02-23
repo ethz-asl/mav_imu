@@ -6,10 +6,6 @@
 #include <imu_node.h>
 #include <log++.h>
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/magnetic_field.hpp>
-#include <sensor_msgs/msg/temperature.hpp>
-#include <sensor_msgs/msg/fluid_pressure.hpp>
 
 ImuNode::ImuNode(ImuInterface &imu, int frequency)
 : Node("imu_node"), imu_interface_(imu), frequency_(frequency) {
