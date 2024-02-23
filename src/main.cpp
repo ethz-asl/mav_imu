@@ -3,7 +3,7 @@
 #include "imu_node.h"
 #include <csignal>
 #include <log++.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 void SignalHandler(int signum) {
   if (signum == SIGINT) {
@@ -14,13 +14,12 @@ void SignalHandler(int signum) {
 
 int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
-  ros::init(argc, argv, "mav_imu_node");
+  rclcpp::init(argc, argv);
 
-  ros::NodeHandle nh_private("~");
-  std::string spi_path =
-      nh_private.param("spi_path", std::string("/dev/spidev0.1"));
-  int frequency        = nh_private.param("frequency", 200);
-  std::string imu_name = nh_private.param("imu", std::string("adis16448"));
+  auto node = std::make_shared<rclcpp::Node>("mav_imu_node");
+  std::string spi_path = node->declare_parameter("spi_path", "/dev/spidev0.1").as_string();
+  int frequency = node->declare_parameter("frequency", 200).as_int();
+  std::string imu_name = node->declare_parameter("imu", "adis16448").as_string();
 
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
@@ -33,7 +32,8 @@ int main(int argc, char **argv) {
 
   ImuNode node{*imu_interface, frequency};
 
-  signal(SIGINT, SignalHandler);
-  node.run();
+  rclcpp::shutdown_on_interrupt();
+  rclcpp::spin(node);
+  rclcpp::shutdown();
   return 0;
 }

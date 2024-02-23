@@ -1,26 +1,21 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(mav_imu)
 
 add_compile_options(-std=c++17 -w)
 
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        sensor_msgs
-        lpp
-        )
-find_package(roscpp)
+# Valid modes are: MODE_LPP MODE_GLOG MODE_ROSLOG MODE_DEFAULT
+# Use add_definitions(-DMODE_LPP) if cmake version <= 3.11
+add_compile_definitions(MODE_LPP)
 
-catkin_package(
-        INCLUDE_DIRS
-        CATKIN_DEPENDS
-        roscpp
-        lpp
-)
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
 
 include_directories(
         include
-        lib/BMI08x-Sensor-API
-        ${catkin_INCLUDE_DIRS})
+        lib/BMI08x-Sensor-API)
 
 add_library(${PROJECT_NAME}
         src/spi_driver.cpp
@@ -36,22 +31,18 @@ add_library(${PROJECT_NAME}_BMI08x
         lib/BMI08x-Sensor-API/bmi08xa.c)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_BMI08x)
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+ament_target_dependencies(${PROJECT_NAME} rclcpp sensor_msgs)
 
 add_executable(${PROJECT_NAME}_node
         src/main.cpp
         )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC MODE_ROSLOG) # Log++
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODE_LPP) # Log++
 
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
+install(TARGETS
+  ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME})
 
-catkin_add_gtest(${PROJECT_NAME}_test
-        test/test_entry_point.cc
-        test/test_vec3.cc
-        test/test_adis16448.cc
-        )
-
-target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
-
+ament_package()
