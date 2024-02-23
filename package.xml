@@ -5,7 +5,16 @@
   <description>The mav_imu package</description>
   <maintainer email="todo@todo.todo">todo</maintainer>
   <license>TODO</license>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
+
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
+
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
 </package>
