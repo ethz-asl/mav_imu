@@ -10,6 +10,10 @@
 #include <linux/spi/spidev.h>
 #include <log++.h>
 #include <string>
+#include <cstring>
+#include <climits>
+#include <unistd.h>
+
 
 Bmi088::Bmi088(std::string acc_path, std::string gyro_path)
     : acc_spi_driver_(std::move(acc_path)), gyro_spi_driver_(std::move(gyro_path)) {}
