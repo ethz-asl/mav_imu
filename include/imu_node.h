@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include <geometry_msgs/Vector3Stamped.h>
 #include <ros/ros.h>
 #include <sensor_msgs/FluidPressure.h>
 #include <sensor_msgs/Imu.h>
@@ -20,7 +21,7 @@
 class ImuNode {
  public:
   ImuNode(ImuInterface &imu_interface, int frequency);
-  int run();
+  int run(bool calibrate_at_startup = false);
 
   inline static bool run_node = true;
 
@@ -30,12 +31,14 @@ class ImuNode {
   void processTemperature();
   void processFluidpressure();
 
-  bool runGyroCalibration(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+  void calibrateGyro();
+  bool calibrateGyroServiceCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
   ros::Publisher imu_data_raw_pub_{};
   ros::Publisher imu_mag_pub_{};
   ros::Publisher imu_temp_pub_{};
   ros::Publisher imu_baro_pub_{};
+  ros::Publisher imu_gyro_offset_pub_{};
 
   ros::ServiceServer gyro_calib_srv_{};
 

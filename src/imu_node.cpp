@@ -7,14 +7,18 @@
 
 ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), frequency_(frequency) {
   ros::NodeHandle nh;
-  imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
-  imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
-  imu_temp_pub_     = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
-  imu_baro_pub_     = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
-  gyro_calib_srv_   = nh.advertiseService("imu/run_gyro_calib", &ImuNode::runGyroCalibration, this);
+  imu_data_raw_pub_    = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
+  imu_mag_pub_         = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
+  imu_temp_pub_        = nh.advertise<sensor_msgs::Temperature>("imu/temp", 1);
+  imu_baro_pub_        = nh.advertise<sensor_msgs::FluidPressure>("imu/pressure", 1);
+  imu_gyro_offset_pub_ = nh.advertise<geometry_msgs::Vector3Stamped>("imu/gyro_bias", 1, true);
+  gyro_calib_srv_ =
+      nh.advertiseService("imu/run_gyro_calib", &ImuNode::calibrateGyroServiceCallback, this);
 }
 
-int ImuNode::run() {
+int ImuNode::run(bool calibrate_at_startup) {
+  if (calibrate_at_startup) { imu_interface_.calibrateGyro(); }
+
   LOG(I, "Node started");
   imu_interface_.printImuConfig();
   while (ros::ok() && run_node) {
@@ -90,10 +94,20 @@ void ImuNode::processFluidpressure() {
 
     imu_baro_pub_.publish(pressure_msg);
   }
-
 }
 
-  bool ImuNode::runGyroCalibration(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res ) {
-    imu_interface_.calibrateGyro();
-    return true;
-  }
+void ImuNode::calibrateGyro() {
+  auto gyro_offset = imu_interface_.calibrateGyro();
+  geometry_msgs::Vector3Stamped goff_msg{};
+  goff_msg.header.stamp = time_now_;
+  goff_msg.vector.x     = gyro_offset.x;
+  goff_msg.vector.y     = gyro_offset.y;
+  goff_msg.vector.z     = gyro_offset.z;
+  imu_gyro_offset_pub_.publish(goff_msg);
+}
+
+bool ImuNode::calibrateGyroServiceCallback(std_srvs::Empty::Request &req,
+                                           std_srvs::Empty::Response &res) {
+  calibrateGyro();
+  return true;
+}

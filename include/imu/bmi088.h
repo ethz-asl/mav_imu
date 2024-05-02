@@ -34,6 +34,8 @@ class Bmi088 : public ImuInterface {
 
   int getRaw(std::vector<byte> cmd) override;
 
+  vec3<double> calibrateGyro() override;
+
   /*!
   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
 

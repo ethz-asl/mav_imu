@@ -72,7 +72,7 @@ class ImuInterface {
    */
   virtual std::optional<vec3<double>> getGyro() = 0;
 
-  virtual bool calibrateGyro() = 0;
+  virtual vec3<double> calibrateGyro() = 0;
 
   /**
    * Gets acceleration data vector
