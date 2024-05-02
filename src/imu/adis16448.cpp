@@ -242,12 +242,12 @@ vec3<double> Adis16448::calibrateGyro() {
 
   // read offsets
   vec3<double> gyro_off_raw{};
-  gyro_off_raw.x        = signedWordToInt(readReg(0x1A));
-  gyro_off_raw.y        = signedWordToInt(readReg(0x1C));
-  gyro_off_raw.z        = signedWordToInt(readReg(0x1E));
+  gyro_off_raw.x        = (double) signedWordToInt(readReg(0x1A));
+  gyro_off_raw.y        = (double) signedWordToInt(readReg(0x1C));
+  gyro_off_raw.z        = (double) signedWordToInt(readReg(0x1E));
   vec3<double> gyro_off = convertGyro(gyro_off_raw);
-  LOG(I, "Starting Gyro Calibration. Keep IMU steady and wait for 5s.");
-  LOG(I, "Gyro offset reset to:\n" << gyro_off.x << " , " << gyro_off.y << " , " << gyro_off.z);
+  LOG(I, "Adis16448 Starting Gyro Calibration. Keep IMU steady for 5s.");
+  LOG(D, "Gyro offset reset to:\t" << gyro_off.x << " , " << gyro_off.y << " , " << gyro_off.z);
 
   // Store sensitivity and sample period
   auto sens_avg = readReg(SENS_AVG);
@@ -264,13 +264,13 @@ vec3<double> Adis16448::calibrateGyro() {
   writeReg(GLOB_CMD, {0x0, 1 << 0}, "GLOB_CMD"); // Set offsets
   usleep(ms_);
 
-  gyro_off_raw.x = signedWordToInt(readReg(0x1A));
-  gyro_off_raw.y = signedWordToInt(readReg(0x1C));
-  gyro_off_raw.z = signedWordToInt(readReg(0x1E));
+  gyro_off_raw.x = (double) signedWordToInt(readReg(0x1A));
+  gyro_off_raw.y = (double) signedWordToInt(readReg(0x1C));
+  gyro_off_raw.z = (double) signedWordToInt(readReg(0x1E));
   gyro_off       = convertGyro(gyro_off_raw);
   LOG(I,
-      "Calibration done. New Gyro offsets:\n"
-          << gyro_off.x << " , " << gyro_off.y << " , " << gyro_off.z);
+      "Adis16448 Setting Gyro offsets to:\t" << gyro_off.x << " , " << gyro_off.y << " , "
+                                             << gyro_off.z);
 
   // Reset sensitivity and sample period
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");

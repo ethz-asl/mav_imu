@@ -5,8 +5,9 @@
 #ifndef MAV_IMU_SRC_IMU_IMUFACTORY_H_
 #define MAV_IMU_SRC_IMU_IMUFACTORY_H_
 
-#include "imu_interface.h"
 #include <memory>
+
+#include "imu_interface.h"
 
 typedef std::shared_ptr<ImuInterface> ImuInterfacePtr;
 

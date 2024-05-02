@@ -16,9 +16,7 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), freque
       nh.advertiseService("imu/run_gyro_calib", &ImuNode::calibrateGyroServiceCallback, this);
 }
 
-int ImuNode::run(bool calibrate_at_startup) {
-  if (calibrate_at_startup) { imu_interface_.calibrateGyro(); }
-
+int ImuNode::run() {
   LOG(I, "Node started");
   imu_interface_.printImuConfig();
   while (ros::ok() && run_node) {

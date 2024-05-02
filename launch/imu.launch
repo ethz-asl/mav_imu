@@ -11,7 +11,7 @@
         <param name="imu" value="$(arg imu)" type="string"/>
         <param name="spi_path" value="$(arg spi_path)" type="string"/>
         <param name="frequency" value="$(arg frequency)" type="int"/>
-        <param name="gyro_calibration" value="true"/>
+        <param name="calibrate_gyro" value="false"/>
     </node>
 
 </launch>

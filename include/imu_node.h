@@ -21,7 +21,8 @@
 class ImuNode {
  public:
   ImuNode(ImuInterface &imu_interface, int frequency);
-  int run(bool calibrate_at_startup = false);
+  int run();
+  void calibrateGyro();
 
   inline static bool run_node = true;
 
@@ -31,7 +32,6 @@ class ImuNode {
   void processTemperature();
   void processFluidpressure();
 
-  void calibrateGyro();
   bool calibrateGyroServiceCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
   ros::Publisher imu_data_raw_pub_{};
