@@ -8,9 +8,11 @@
 #include "imu_interface.h"
 #include <memory>
 
+typedef std::shared_ptr<ImuInterface> ImuInterfacePtr;
+
 class ImuFactory {
  public:
-  static ImuInterface *createImuByName(const std::string &imu_name, const std::string &spi_path);
+  static ImuInterfacePtr createImuByName(const std::string &imu_name, const std::string &spi_path);
 };
 
 #endif //MAV_IMU_SRC_IMU_IMUFACTORY_H_

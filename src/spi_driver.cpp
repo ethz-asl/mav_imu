@@ -81,15 +81,11 @@ SpiDriver::xfer2(const std::vector<std::vector<byte>> &cmds,
       return {};
     }
 
-    if (i == 0) {
-      continue;
-    }
+    if (i == 0) { continue; }
 
     std::vector<unsigned char> ret{};
 
-    for (int j = 0; j < len; j++) {
-      ret.push_back(buf2[j]);
-    }
+    for (int j = 0; j < len; j++) { ret.push_back(buf2[j]); }
     res.push_back(ret);
   }
   return res;
@@ -99,6 +95,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
                                   const int response_len,
                                   const uint32_t speed_hz) const {
   // Create one transfer to send command and one to receive response.
+  // TODO(rikba): Handle only transmit case.
   struct spi_ioc_transfer xfer[2];
   memset(xfer, 0, sizeof xfer);
 
@@ -106,7 +103,12 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
   xfer[0].tx_buf        = (unsigned long) cmd.data();
   xfer[0].len           = cmd.size();
   xfer[0].speed_hz      = speed_hz;
+  xfer[0].delay_usecs   = 0;
   xfer[0].bits_per_word = CHAR_BIT;
+  xfer[0].cs_change     = 0;
+  xfer[0].tx_nbits      = 0;
+  xfer[0].rx_nbits      = 0;
+  xfer[0].pad           = 0;
 
   // Configure receive
   std::vector<byte> res(response_len, 0);
@@ -114,7 +116,12 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
   xfer[1].rx_buf        = (unsigned long) res.data();
   xfer[1].len           = response_len;
   xfer[1].speed_hz      = speed_hz;
+  xfer[1].delay_usecs   = 0;
   xfer[1].bits_per_word = CHAR_BIT;
+  xfer[1].cs_change     = 1; // Deselect at end of transaction.
+  xfer[1].tx_nbits      = 0;
+  xfer[1].rx_nbits      = 0;
+  xfer[1].pad           = 0;
 
   int status = ioctl(fd_, SPI_IOC_MESSAGE(2), xfer);
   if (status < 0) {
@@ -122,6 +129,7 @@ std::vector<byte> SpiDriver::xfer(const std::vector<byte> &cmd,
     return {};
   }
 
+  // TODO(rikba): Handle case where empty vector is returned but no error.
   return res;
 }
 

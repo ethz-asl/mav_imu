@@ -5,8 +5,7 @@
 #include <log++.h>
 #include <ros/ros.h>
 
-ImuNode::ImuNode(ImuInterface &imu, int frequency)
-    : imu_interface_(imu), frequency_(frequency) {
+ImuNode::ImuNode(ImuInterface &imu, int frequency) : imu_interface_(imu), frequency_(frequency) {
   ros::NodeHandle nh;
   imu_data_raw_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
   imu_mag_pub_      = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
@@ -15,16 +14,9 @@ ImuNode::ImuNode(ImuInterface &imu, int frequency)
   gyro_calib_srv_   = nh.advertiseService("imu/run_gyro_calib", &ImuNode::runGyroCalibration, this);
 }
 
-bool ImuNode::init() {
-  if (!imu_interface_.selftest()) {
-    return true;
-  }
-  LOG(I, "Imu Node initalized.");
-  return true;
-}
-
 int ImuNode::run() {
   LOG(I, "Node started");
+  imu_interface_.printImuConfig();
   while (ros::ok() && run_node) {
     ros::Rate loop_rate(frequency_);
 
@@ -40,6 +32,7 @@ int ImuNode::run() {
     ros::spinOnce();
     loop_rate.sleep();
   }
+  imu_interface_.close();
   return 0;
 }
 

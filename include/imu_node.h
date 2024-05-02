@@ -20,7 +20,6 @@
 class ImuNode {
  public:
   ImuNode(ImuInterface &imu_interface, int frequency);
-  bool init();
   int run();
 
   inline static bool run_node = true;

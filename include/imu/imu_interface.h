@@ -45,11 +45,11 @@ inline vec3<T> operator*=(vec3<T> &t, T num) {
 
 class ImuBurstResult {
  public:
-  std::optional<vec3<double>> gyro;
-  std::optional<vec3<double>> acceleration;
-  std::optional<vec3<double>> magnetometer;
-  std::optional<double> baro;
-  std::optional<double> temp;
+  std::optional<vec3<double>> gyro{std::nullopt};
+  std::optional<vec3<double>> acceleration{std::nullopt};
+  std::optional<vec3<double>> magnetometer{std::nullopt};
+  std::optional<double> baro{std::nullopt};
+  std::optional<double> temp{std::nullopt};
 };
 
 class ImuInterface {
@@ -59,7 +59,6 @@ class ImuInterface {
    * Imu health check.
    * @return true if successful, otherwise false
    */
-  virtual bool selftest() = 0;
 
   /**
    * Cleanup and close files used by IMU
@@ -122,6 +121,17 @@ class ImuInterface {
   }
 
   // virtual int getSerialnumber();
+
+  /*!
+  *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
+
+  *  @return void.
+  */
+  virtual void printImuConfig() = 0;
+
+ protected:
+  inline static const constexpr double g_ =
+      9.80665; // TODO(rikba): Try looking this up from WolframAlpha on init.
 };
 
 #endif // MAV_IMU_INCLUDE_IMU_INTERFACE_H_

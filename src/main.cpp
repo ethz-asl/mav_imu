@@ -14,7 +14,6 @@ void SignalHandler(int signum) {
 
 int main(int argc, char **argv) {
   LOG_INIT(argv[0]);
-  signal(SIGINT, SignalHandler);
   ros::init(argc, argv, "mav_imu_node");
 
   ros::NodeHandle nh_private("~");
@@ -26,14 +25,15 @@ int main(int argc, char **argv) {
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
 
-  ImuInterface *imu_interface = ImuFactory::createImuByName(imu_name, spi_path);
-  ImuNode node{*imu_interface, frequency};
-  if (!node.init()) {
-    LOG(F, "Imu init failed.");
+  ImuInterfacePtr imu_interface = ImuFactory::createImuByName(imu_name, spi_path);
+  if (imu_interface == nullptr) {
+    LOG(F, "Imu interface failed to initialize");
     return -1;
   }
-  node.run();
 
-  delete imu_interface; // Call destructor to close spi device
+  ImuNode node{*imu_interface, frequency};
+
+  signal(SIGINT, SignalHandler);
+  node.run();
   return 0;
 }
