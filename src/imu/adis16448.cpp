@@ -241,15 +241,12 @@ bool Adis16448::calibrateGyro() {
   writeReg(0x1E, {0x00, 0x00}, "ZGYRO_OFF");
 
   // read offsets
-  auto xgyro_off = readReg(0x1A);
-  auto ygyro_off = readReg(0x1C);
-  auto zgyro_off = readReg(0x1E);
+  auto xgyro_off = (double) signedWordToInt(readReg(0x1A));
+  auto ygyro_off = (double) signedWordToInt(readReg(0x1C));
+  auto zgyro_off = (double) signedWordToInt(readReg(0x1E));
 
-  LOG(I,
-      "Gyro offsets after reset:\n"
-          << xgyro_off[0] << " , " << xgyro_off[1] << " , " << ygyro_off[1] << " , "
-          << zgyro_off[1]);
-  LOG(I, "Starting Gyro Calibration. Keep IMU steady and wait for 3s.");
+  LOG(I, "Gyro offsets after reset:\n" << xgyro_off << " , " << ygyro_off << " , " << zgyro_off);
+  LOG(I, "Starting Gyro Calibration. Keep IMU steady and wait for 5s.");
 
   // Store sensitivity and sample period
   auto sens_avg = readReg(SENS_AVG);
@@ -259,20 +256,20 @@ bool Adis16448::calibrateGyro() {
   auto calib_sens_avg = sens_avg;
   auto calib_smpl_prd = smpl_prd;
   calib_sens_avg[0]   = 0x01; // Set high sensitivity
-  calib_smpl_prd[0]   = 0x0B; // Sample for (2^11 / 819.2) = 2.5s
+  calib_smpl_prd[0]   = 0x0C; // Sample for (2^11 / 819.2) = 2.5s
   writeReg(SENS_AVG, calib_sens_avg, "CALIB_SENS_AVG");
   writeReg(SMPL_PRD, calib_smpl_prd, "CALIB_SMPL_PRD");
-  usleep(3 * 1e6);                               // wait for next measurement
+  usleep(5 * 1e6);                               // wait for next measurement
   writeReg(GLOB_CMD, {0x0, 1 << 0}, "GLOB_CMD"); // Set offsets
   usleep(ms_);
 
-  ygyro_off = readReg(0x1C);
-  xgyro_off = readReg(0x1A);
-  zgyro_off = readReg(0x1E);
+  xgyro_off = (double) signedWordToInt(readReg(0x1A));
+  ygyro_off = (double) signedWordToInt(readReg(0x1C));
+  zgyro_off = (double) signedWordToInt(readReg(0x1E));
   LOG(I,
       "Gyro offsets after calibration\n"
-          << "[" << xgyro_off[0] << " , " << xgyro_off[1] << "]"
-          << " , " << ygyro_off[1] << " , " << zgyro_off[1]);
+          << "[" << xgyro_off << "]"
+          << " , " << ygyro_off << " , " << zgyro_off);
 
   // Reset sensitivity and sample period
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");
