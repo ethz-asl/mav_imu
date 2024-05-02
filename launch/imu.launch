@@ -5,13 +5,14 @@
     <arg name="frequency" default="200" doc="The IMU sample frequency."/>
     <arg name="launch-prefix" default="" doc="Start nodes with launch-prefix."/>
     <arg name="output" default="screen" doc="Logging directory."/>
+    <arg name="calibrate_gyro" default="false" />
 
     <node name="mav_imu_node" pkg="mav_imu" type="mav_imu_node" launch-prefix="$(arg launch-prefix)"
           output="$(arg output)">
         <param name="imu" value="$(arg imu)" type="string"/>
         <param name="spi_path" value="$(arg spi_path)" type="string"/>
         <param name="frequency" value="$(arg frequency)" type="int"/>
-        <param name="calibrate_gyro" value="false"/>
+        <param name="calibrate_gyro" value="$(arg calibrate_gyro)"/>
     </node>
 
 </launch>
