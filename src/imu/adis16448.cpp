@@ -3,13 +3,17 @@
 //
 
 #include "imu/adis16448.h"
-#include "imu/adis16448_cmds.h"
+
+#include <unistd.h>
+
 #include <cstring>
 #include <iostream>
+
 #include <linux/spi/spidev.h>
 #include <log++.h>
 #include <sys/ioctl.h>
-#include <unistd.h>
+
+#include "imu/adis16448_cmds.h"
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
@@ -230,7 +234,7 @@ int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
 }
 
-bool Adis16448::calibrateGyro(){
+bool Adis16448::calibrateGyro() {
   // set offsets to zero
   writeReg(0x1A, {0x00, 0x00}, "XGYRO_OFF");
   writeReg(0x1C, {0x00, 0x00}, "YGYRO_OFF");
@@ -241,7 +245,11 @@ bool Adis16448::calibrateGyro(){
   auto ygyro_off = readReg(0x1C);
   auto zgyro_off = readReg(0x1E);
 
-  std::cout << "Gyro offers after reset:\n" << xgyro_off[0] << " , " << xgyro_off[1] << " , " << ygyro_off[1] << " , " << zgyro_off[1] << std::endl;
+  LOG(I,
+      "Gyro offsets after reset:\n"
+          << xgyro_off[0] << " , " << xgyro_off[1] << " , " << ygyro_off[1] << " , "
+          << zgyro_off[1]);
+  LOG(I, "Starting Gyro Calibration. Keep IMU steady and wait for 3s.");
 
   // Store sensitivity and sample period
   auto sens_avg = readReg(SENS_AVG);
@@ -250,19 +258,21 @@ bool Adis16448::calibrateGyro(){
   // Calibrate
   auto calib_sens_avg = sens_avg;
   auto calib_smpl_prd = smpl_prd;
-  calib_sens_avg[0] = 0x01; // Set high sensitivity
-  calib_smpl_prd[0] = 0x0F; // Sample for (2^15 / 819.2) = 40s
-  std::cout << "Starting Gyro Calibration. Keep IMU steady and wait for 40s.." << std::endl;
+  calib_sens_avg[0]   = 0x01; // Set high sensitivity
+  calib_smpl_prd[0]   = 0x0B; // Sample for (2^11 / 819.2) = 2.5s
   writeReg(SENS_AVG, calib_sens_avg, "CALIB_SENS_AVG");
   writeReg(SMPL_PRD, calib_smpl_prd, "CALIB_SMPL_PRD");
-  usleep(40*1e6); // wait for next measurement
+  usleep(3 * 1e6);                               // wait for next measurement
   writeReg(GLOB_CMD, {0x0, 1 << 0}, "GLOB_CMD"); // Set offsets
   usleep(ms_);
 
   ygyro_off = readReg(0x1C);
   xgyro_off = readReg(0x1A);
   zgyro_off = readReg(0x1E);
-  std::cout << "Gyro offsets after calibration\n" << "[" << xgyro_off[0] << " , " << xgyro_off[1] << "]" << " , " << ygyro_off[1] << " , " << zgyro_off[1] << std::endl;
+  LOG(I,
+      "Gyro offsets after calibration\n"
+          << "[" << xgyro_off[0] << " , " << xgyro_off[1] << "]"
+          << " , " << ygyro_off[1] << " , " << zgyro_off[1]);
 
   // Reset sensitivity and sample period
   writeReg(SENS_AVG, sens_avg, "SENS_AVG");

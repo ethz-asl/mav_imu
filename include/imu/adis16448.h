@@ -50,6 +50,7 @@ class Adis16448 : public ImuInterface {
   ImuBurstResult burst() override;
 
   bool calibrateGyro() override;
+
   /*!
   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
 
