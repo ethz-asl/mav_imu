@@ -236,15 +236,15 @@ int Adis16448::signedWordToInt(const std::vector<byte> &word) {
 
 vec3<double> Adis16448::calibrateGyro() {
   // set offsets to zero
-  writeReg(0x1A, {0x00, 0x00}, "XGYRO_OFF");
-  writeReg(0x1C, {0x00, 0x00}, "YGYRO_OFF");
-  writeReg(0x1E, {0x00, 0x00}, "ZGYRO_OFF");
+  writeReg(XGYRO_OFF, {0x00, 0x00}, "XGYRO_OFF");
+  writeReg(YGYRO_OFF, {0x00, 0x00}, "YGYRO_OFF");
+  writeReg(ZGYRO_OFF, {0x00, 0x00}, "ZGYRO_OFF");
 
   // read offsets
   vec3<double> gyro_off_raw{};
-  gyro_off_raw.x        = (double) signedWordToInt(readReg(0x1A));
-  gyro_off_raw.y        = (double) signedWordToInt(readReg(0x1C));
-  gyro_off_raw.z        = (double) signedWordToInt(readReg(0x1E));
+  gyro_off_raw.x        = (double) signedWordToInt(readReg(XGYRO_OFF));
+  gyro_off_raw.y        = (double) signedWordToInt(readReg(YGYRO_OFF));
+  gyro_off_raw.z        = (double) signedWordToInt(readReg(ZGYRO_OFF));
   vec3<double> gyro_off = convertGyro(gyro_off_raw);
   LOG(I, "Adis16448 Starting Gyro Calibration. Keep IMU steady for 5s.");
   LOG(D, "Gyro offset reset to:\t" << gyro_off.x << " , " << gyro_off.y << " , " << gyro_off.z);
@@ -264,9 +264,9 @@ vec3<double> Adis16448::calibrateGyro() {
   writeReg(GLOB_CMD, {0x0, 1 << 0}, "GLOB_CMD"); // Set offsets
   usleep(ms_);
 
-  gyro_off_raw.x = (double) signedWordToInt(readReg(0x1A));
-  gyro_off_raw.y = (double) signedWordToInt(readReg(0x1C));
-  gyro_off_raw.z = (double) signedWordToInt(readReg(0x1E));
+  gyro_off_raw.x = (double) signedWordToInt(readReg(XGYRO_OFF));
+  gyro_off_raw.y = (double) signedWordToInt(readReg(YGYRO_OFF));
+  gyro_off_raw.z = (double) signedWordToInt(readReg(ZGYRO_OFF));
   gyro_off       = convertGyro(gyro_off_raw);
   LOG(I,
       "Adis16448 Setting Gyro offsets to:\t" << gyro_off.x << " , " << gyro_off.y << " , "
