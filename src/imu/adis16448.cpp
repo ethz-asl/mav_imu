@@ -3,13 +3,17 @@
 //
 
 #include "imu/adis16448.h"
-#include "imu/adis16448_cmds.h"
+
+#include <unistd.h>
+
 #include <cstring>
 #include <iostream>
+
 #include <linux/spi/spidev.h>
 #include <log++.h>
 #include <sys/ioctl.h>
-#include <unistd.h>
+
+#include "imu/adis16448_cmds.h"
 
 Adis16448::Adis16448(const std::string &path) : spi_driver_(path) {}
 
@@ -228,6 +232,51 @@ int Adis16448::unsignedWordToInt(const std::vector<byte> &word) {
 
 int Adis16448::signedWordToInt(const std::vector<byte> &word) {
   return (((int) *(signed char *) (word.data())) * 1 << CHAR_BIT) | word[1];
+}
+
+vec3<double> Adis16448::calibrateGyro() {
+  // set offsets to zero
+  writeReg(XGYRO_OFF, {0x00, 0x00}, "XGYRO_OFF");
+  writeReg(YGYRO_OFF, {0x00, 0x00}, "YGYRO_OFF");
+  writeReg(ZGYRO_OFF, {0x00, 0x00}, "ZGYRO_OFF");
+
+  // read offsets
+  vec3<double> gyro_off_raw{};
+  gyro_off_raw.x        = (double) signedWordToInt(readReg(XGYRO_OFF));
+  gyro_off_raw.y        = (double) signedWordToInt(readReg(YGYRO_OFF));
+  gyro_off_raw.z        = (double) signedWordToInt(readReg(ZGYRO_OFF));
+  vec3<double> gyro_off = convertGyro(gyro_off_raw);
+  LOG(I, "Adis16448 Starting Gyro Calibration. Keep IMU steady for 5s.");
+  LOG(D, "Gyro offset reset to:\t" << gyro_off.x << " , " << gyro_off.y << " , " << gyro_off.z);
+
+  // Store sensitivity and sample period
+  auto sens_avg = readReg(SENS_AVG);
+  auto smpl_prd = readReg(SMPL_PRD);
+
+  // Calibrate
+  auto calib_sens_avg = sens_avg;
+  auto calib_smpl_prd = smpl_prd;
+  calib_sens_avg[0]   = 0x01; // Set high sensitivity
+  calib_smpl_prd[0]   = 0x0C; // Sample for (2^12 / 819.2) = 5s
+  writeReg(SENS_AVG, calib_sens_avg, "CALIB_SENS_AVG");
+  writeReg(SMPL_PRD, calib_smpl_prd, "CALIB_SMPL_PRD");
+  usleep(5 * 1e6);                               // wait for next measurement
+  writeReg(GLOB_CMD, {0x0, 1 << 0}, "GLOB_CMD"); // Set offsets
+  usleep(ms_);
+
+  gyro_off_raw.x = (double) signedWordToInt(readReg(XGYRO_OFF));
+  gyro_off_raw.y = (double) signedWordToInt(readReg(YGYRO_OFF));
+  gyro_off_raw.z = (double) signedWordToInt(readReg(ZGYRO_OFF));
+  gyro_off       = convertGyro(gyro_off_raw);
+  LOG(I,
+      "Adis16448 Setting Gyro offsets to:\t" << gyro_off.x << " , " << gyro_off.y << " , "
+                                             << gyro_off.z);
+
+  // Reset sensitivity and sample period
+  writeReg(SENS_AVG, sens_avg, "SENS_AVG");
+  writeReg(SMPL_PRD, smpl_prd, "SMPL_PRD");
+
+  return gyro_off;
 }
 
 bool Adis16448::setBurstCRCEnabled(bool b) {

@@ -4,9 +4,10 @@
 
 #ifndef MAV_IMU_SRC_IMU_ADIS16448_H_
 #define MAV_IMU_SRC_IMU_ADIS16448_H_
+#include <string>
+
 #include "imu_interface.h"
 #include "spi_driver.h"
-#include <string>
 
 class Adis16448 : public ImuInterface {
  public:
@@ -48,6 +49,8 @@ class Adis16448 : public ImuInterface {
    */
   ImuBurstResult burst() override;
 
+  vec3<double> calibrateGyro() override;
+
   /*!
   *  @brief Reads accelerometer and gyroscope config from registers and prints them out.
 
@@ -82,7 +85,7 @@ class Adis16448 : public ImuInterface {
   void writeReg(uint8_t addr, const std::vector<byte> &data, const std::string &name) const;
 
   /**
-   * Run a test read sequence for SPI communcation.
+   * Run a test read sequence for SPI communication.
    */
   bool testSPI();
 

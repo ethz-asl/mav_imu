@@ -1,9 +1,11 @@
+#include <csignal>
+
+#include <log++.h>
+#include <ros/ros.h>
+
 #include "imu/ImuFactory.h"
 #include "imu/adis16448.h"
 #include "imu_node.h"
-#include <csignal>
-#include <log++.h>
-#include <ros/ros.h>
 
 void SignalHandler(int signum) {
   if (signum == SIGINT) {
@@ -17,10 +19,10 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "mav_imu_node");
 
   ros::NodeHandle nh_private("~");
-  std::string spi_path =
-      nh_private.param("spi_path", std::string("/dev/spidev0.1"));
+  std::string spi_path = nh_private.param("spi_path", std::string("/dev/spidev0.1"));
   int frequency        = nh_private.param("frequency", 200);
   std::string imu_name = nh_private.param("imu", std::string("adis16448"));
+  bool calibrate_gyro  = nh_private.param("calibrate_gyro", false);
 
   LOG(I, "Spi path: " << spi_path);
   LOG(I, "Loop frequency " << frequency);
@@ -32,6 +34,7 @@ int main(int argc, char **argv) {
   }
 
   ImuNode node{*imu_interface, frequency};
+  if (calibrate_gyro) { node.calibrateGyro(); }
 
   signal(SIGINT, SignalHandler);
   node.run();
