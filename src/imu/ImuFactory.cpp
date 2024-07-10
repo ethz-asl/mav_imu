@@ -4,7 +4,9 @@
 
 #include <imu/ImuFactory.h>
 #include <imu/adis16448.h>
+#ifdef MAV_IMU_BUILD_BOSCH
 #include <imu/bmi088.h>
+#endif
 #include <log++.h>
 #include <memory>
 
@@ -24,7 +26,10 @@ ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
     if (adis->init() && adis->setBurstCRCEnabled(true)) { return adis; }
     LOG(E, "Failed to initialize " << imu_name);
     return nullptr;
-  } else if (imu_name == "bmi088") {
+  }
+
+  else if (imu_name == "bmi088") {
+#ifdef MAV_IMU_BUILD_BOSCH
     // Select the second Chip Select for the gyro.
     // get the last letter of the string
     char last_letter = spi_path[spi_path.length() - 1];
@@ -45,6 +50,11 @@ ImuInterfacePtr ImuFactory::createImuByName(const std::string &imu_name,
     if (bmi->init()) { return bmi; }
     LOG(E, "Failed to initialize " << imu_name);
     return nullptr;
+
+#else
+    LOG(E, "Compiled without Bosch BMI088 support");
+    return nullptr;
+#endif
   }
 
   LOG(E, "Imu of type " << imu_name << " not supported");
